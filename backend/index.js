@@ -1,17 +1,23 @@
-const express = require("express");
-const cors = require("cors");
-
+const express = require('express');
 const app = express();
-app.use(cors());
 app.use(express.json());
+const port = 3000;
 
-// ROUTE TEST
-app.get("/", (req, res) => {
-  res.json({ message: "Backend jalan cuy 🔥" });
+app.get('/api/sapa', (req, res) => {
+  res.json({ message: 'tes' });
 });
 
-// JALANKAN SERVER
-const PORT = 3000;
-app.listen(PORT, () => {
-  console.log(`Server running di http://localhost:${PORT}`);
+app.post('/api/users', (req, res) => {
+  const dataPengguna = req.body; 
+
+  console.log('Data yang diterima:', dataPengguna);
+
+  res.status(201).json({
+    message: 'User berhasil dibuat',
+    data: dataPengguna
+  });
+});
+
+app.listen(port, () => {
+    console.log(`Server is running at http://localhost:${port}`);
 });
