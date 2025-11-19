@@ -1,13 +1,12 @@
-import Header from "../component/header.jsx";
-import heroImage from "../assets/pria-hitamberotot-ini.webp";
-import PeopleIcon from "../assets/person-svgrepo-com.svg?react";
-import CoachIcon from "../assets/coach-svgrepo-com.svg?react";
-import DanceIcon from "../assets/Group.svg";
-import CardioIcon from "../assets/XMLID_8_.svg";
-import StrengthIcon from "../assets/dumbbell-svgrepo-com1.svg";
-import logoText from '../assets/logotext.png'
-import TestimonialCard from "../component/testimonial-card.jsx";
-import { FaInstagram, FaFacebook, FaYoutube, FaTiktok } from "react-icons/fa";
+import Header from "../../component/header.jsx";
+import heroImage from "../../assets/pria-hitamberotot-ini.webp";
+import PeopleIcon from "../../assets/person-svgrepo-com.svg?react";
+import CoachIcon from "../../assets/coach-svgrepo-com.svg?react";
+import DanceIcon from "../../assets/Group.svg";
+import CardioIcon from "../../assets/XMLID_8_.svg";
+import StrengthIcon from "../../assets/dumbbell-svgrepo-com1.svg";
+import TestimonialCard from "../../component/testimonial-card.jsx";
+import Footer from "../../component/footer.jsx";
 
 export default function Home() {
   return (
@@ -210,10 +209,10 @@ export default function Home() {
           Enjoy Our Top Facilities
         </h2>
         <div
-          className=" relative m-0 mb-20 mt-5 w-screen h-[528px] ml-[calc(50%-50vw)] mr-[calc(50%-50vw)] bg-[#444444]"
+          className=" relative m-0 mb-20 mt-5 w-screen h-[528px] ml-[calc(50%-50vw)] mr-[calc(50%-50vw)] bg-[#444444] pt-8"
           style={{ boxShadow: "0px -10px 80.9px 35px rgba(255, 43, 43, 0.25)" }}
         >
-          <h2 className="text-white text-[50px] text-shadow-[6px_4px_4px_#000000] font-bold ml-10 mt-5">
+          <h2 className="text-white text-[50px] text-shadow-[6px_4px_4px_#000000] font-bold ml-10">
             Gym Room
           </h2>
           <div className="absolute bottom-0 left-1/2 transform -translate-x-1/2 bg-white w-50 h-4 mb-2 rounded-lg">
@@ -383,78 +382,7 @@ export default function Home() {
           />
         </div>
       </div>
-      <footer className="bg-[#444444] text-white py-10 mt-20">
-        <div className="w-[1250px] mx-auto flex justify-between items-start">
-
-          <div className="flex flex-col gap-3 max-w-[350px]">
-            <img src={logoText} alt="Gym Logo" className="w-32 mb-2" />
-            <p className="text-[16px] leading-6">
-              Train with us and upgrade your body, stamina, and lifestyle. The
-              best facility with professional trainers.
-            </p>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <h3 className="text-[20px] font-bold mb-1">Quick Links</h3>
-            <a href="#" className="hover:text-[#ff6161]">
-              Home
-            </a>
-            <a href="#" className="hover:text-[#ff6161]">
-              Services
-            </a>
-            <a href="#" className="hover:text-[#ff6161]">
-              Membership
-            </a>
-            <a href="#" className="hover:text-[#ff6161]">
-              Contact
-            </a>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <h3 className="text-[20px] font-bold mb-1">Contact</h3>
-            <p>+62 812-3456-7890</p>
-            <p>Jl. Merah Fitness No. 21</p>
-            <p>Jakarta, Indonesia</p>
-          </div>
-
-          <div>
-            <h3 className="text-[20px] font-bold mb-3">Follow Us</h3>
-            <div className="flex gap-4">
-              <a
-                href="#"
-                className="bg-[#ff1f1f] p-3 rounded-full hover:bg-[#ff6161] transition"
-              >
-                <FaInstagram size={25} />
-              </a>
-
-              <a
-                href="#"
-                className="bg-[#ff1f1f] p-3 rounded-full hover:bg-[#ff6161] transition"
-              >
-                <FaFacebook size={25} />
-              </a>
-
-              <a
-                href="#"
-                className="bg-[#ff1f1f] p-3 rounded-full hover:bg-[#ff6161] transition"
-              >
-                <FaYoutube size={25} />
-              </a>
-
-              <a
-                href="#"
-                className="bg-[#ff1f1f] p-3 rounded-full hover:bg-[#ff6161] transition"
-              >
-                <FaTiktok size={25} />
-              </a>
-            </div>
-          </div>
-        </div>
-
-        <div className="text-center text-[14px] text-gray-300 mt-8">
-          © {new Date().getFullYear()} RedWolf Gym. All Rights Reserved.
-        </div>
-      </footer>
+      <Footer />
     </>
   );
 }
