@@ -1,23 +1,29 @@
 const express = require('express');
 const app = express();
+const pool = require('./db');
+
 app.use(express.json());
-const port = 3000;
 
-app.get('/api/sapa', (req, res) => {
-  res.json({ message: 'tes' });
+app.post('/api/users', async (req, res) => {
+  const { nama, email } = req.body;
+
+  try {
+    const result = await pool.query(
+      'INSERT INTO users (nama, email) VALUES ($1, $2) RETURNING *',
+      [nama, email]
+    );
+
+    res.status(201).json({
+      message: 'User berhasil dibuat',
+      data: result.rows[0]
+    });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Database error' });
+  }
 });
 
-app.post('/api/users', (req, res) => {
-  const dataPengguna = req.body; 
-
-  console.log('Data yang diterima:', dataPengguna);
-
-  res.status(201).json({
-    message: 'User berhasil dibuat',
-    data: dataPengguna
-  });
-});
-
-app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+app.listen(3000, () => {
+  console.log('Server berjalan di http://localhost:3000');
 });
