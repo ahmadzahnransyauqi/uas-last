@@ -1,1 +1,16 @@
 @import "tailwindcss";
+
+@keyframes slideX {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(-50%); }
+}
+
+.hide-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+/* Hide scrollbar for Firefox */
+.hide-scrollbar {
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
