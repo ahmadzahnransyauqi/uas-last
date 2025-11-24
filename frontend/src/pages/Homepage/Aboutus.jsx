@@ -5,6 +5,9 @@ import rogerSumateraMeme from "../../assets/rogerSumateraMeme.webp";
 import blackSuperman from "../../assets/blackSuperman.webp";
 import strongThumb from "../../assets/strongthumb.webp";
 import AchmadCaesar from "../../assets/AchmadCaesarRamadhan.webp";
+import MHDDepa from "../../assets/MHDDepa.webp";
+import MHDHafiz from "../../assets/MHDHafiz.webp";
+import Zahran from "../../assets/stelle.webp";
 
 export default function AboutUs() {
   return (
@@ -98,14 +101,14 @@ export default function AboutUs() {
             <p className="text-white text-center">Front-End Dev & Founder</p>
           </div>
           <div className="translate-y-20">
-            <div className="bg-[rgb(255,31,31)] w-48 h-70 rounded-lg mb-5 justify-self-center"></div>
+            <div className="bg-[rgb(255,31,31)] w-48 h-70 rounded-lg mb-5 justify-self-center" style={{backgroundImage: `url(${MHDHafiz})`, backgroundSize: "400px", backgroundPosition:"55% 40%"}}></div>
             <p className="text-white text-[20px] font-bold text-center">
               MHD. Hafiz
             </p>
             <p className="text-white text-center">Back-End Dev & CFO</p>
           </div>
           <div>
-            <div className="bg-[#ff1f1f] w-48 h-70 rounded-lg mb-5 justify-self-center"></div>
+            <div className="bg-[#ff1f1f] w-48 h-70 rounded-lg mb-5 justify-self-center" style={{backgroundImage: `url(${Zahran})`, backgroundSize: "400px", backgroundPosition:"45% 40%"}}></div>
             <p className="text-white text-[20px] font-bold text-center">
               Ahmad Zahran Syauqi
             </p>
@@ -119,7 +122,7 @@ export default function AboutUs() {
             <p className="text-white text-center">Front-End Dev & CTO</p>
           </div>
           <div>
-            <div className="bg-[#ff1f1f] w-48 h-70 rounded-lg mb-5 justify-self-center"></div>
+            <div className="bg-[#ff1f1f] w-48 h-70 rounded-lg mb-5 justify-self-center" style={{backgroundImage: `url(${MHDDepa})`, backgroundSize: "400px", backgroundPosition:"40% 50%"}}></div>
             <p className="text-white text-[20px] font-bold text-center">
               Muhammad Aryadefa
             </p>
