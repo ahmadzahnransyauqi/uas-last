@@ -1,35 +1,67 @@
-import { useEffect, useState } from 'react'
-import './App.css'
-import LoginForm from './components/LoginForm'
+import { useEffect, useState } from 'react';
+import LoginForm from './components/login';
+import RegisterForm from './components/register'; // Pastikan nama import sesuai file Anda
+import Dashboard from './components/Dashboard';
+import LandingPage from './components/LandingPage';
 
 function App() {
-  const [data, setData] = useState(null)
+  const [user, setUser] = useState(null);
+  
+  // State navigasi: 'home' | 'login' | 'register'
+  const [currentView, setCurrentView] = useState('home'); 
 
   useEffect(() => {
-    fetch("http://localhost:3000")
-      .then(res => res.json())
-      .then(data => {
-        console.log(data)
-        setData(data)
-      })
-      .catch(err => console.log(err))
-  }, [])
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    localStorage.removeItem("user");
+    setUser(null);
+    setCurrentView('home'); 
+  };
+
+  // --- LOGIKA TAMPILAN ---
+  
+  // 1. Jika User Sudah Login -> Dashboard
+  if (user) {
+    return <Dashboard user={user} onLogout={handleLogout} />;
+  }
+
+  // 2. Jika Belum Login -> Cek View
   return (
-    <div>
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
-      
-      {}
-      <h2>Data dari backend:</h2>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-      
-      <hr className="my-6" />
+    <div className="min-h-screen bg-gray-100 font-sans">
+        
+      {/* TAMPILAN HOME */}
+      {currentView === 'home' && (
+        <LandingPage onNavigate={setCurrentView} />
+      )}
 
-      {}
-      <LoginForm /> 
+      {/* TAMPILAN LOGIN */}
+      {currentView === 'login' && (
+        <div className="flex items-center justify-center min-h-screen p-4">
+            <LoginForm 
+                onRegister={() => setCurrentView('register')} // Fungsi pindah ke Register
+                onBack={() => setCurrentView('home')}         // Fungsi kembali ke Home
+            />
+        </div>
+      )}
+
+      {/* TAMPILAN REGISTER */}
+      {currentView === 'register' && (
+        <div className="flex items-center justify-center min-h-screen p-4">
+            <RegisterForm 
+                onLogin={() => setCurrentView('login')}       // Fungsi pindah ke Login
+                onBack={() => setCurrentView('home')}         // Fungsi kembali ke Home
+            />
+        </div>
+      )}
 
     </div>
-  )
+  );
 }
 
-export default App
+export default App;

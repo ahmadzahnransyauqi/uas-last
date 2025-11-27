@@ -1,23 +1,26 @@
 const express = require('express');
+const cors = require('cors');
+
+// Import Route yang tadi dipisah
+const authRoutes = require('./routes/auth'); 
+// Nanti kalau scan sudah dibuat: const scanRoutes = require('./routes/scan');
+
 const app = express();
-app.use(express.json());
 const port = 3000;
 
-app.get('/api/sapa', (req, res) => {
-  res.json({ message: 'tes' });
-});
+// Middleware
+app.use(cors());
+app.use(express.json());
 
-app.post('/api/users', (req, res) => {
-  const dataPengguna = req.body; 
+// --- GUNAKAN ROUTES ---
+// Artinya: semua URL yang berawalan /api/auth akan diurus oleh authRoutes
+app.use('/api/auth', authRoutes);
 
-  console.log('Data yang diterima:', dataPengguna);
-
-  res.status(201).json({
-    message: 'User berhasil dibuat',
-    data: dataPengguna
-  });
+// Route Cek Server
+app.get('/', (req, res) => {
+  res.send("API Gym Aktif 😎🔥");
 });
 
 app.listen(port, () => {
-    console.log(`Server is running at http://localhost:${port}`);
+  console.log(`🚀 Server berjalan di http://localhost:${port}`);
 });
