@@ -8,6 +8,7 @@ import AboutUs from "./pages/Homepage/Aboutus.jsx";
 import { Route, Routes } from "react-router-dom";
 import Membership from "./pages/Homepage/membership.jsx";
 import Class from "./pages/Homepage/class.jsx";
+import ForgotPassword from "./pages/Homepage/forgotPassword.jsx";
 
 function App() {
   return (
@@ -19,8 +20,9 @@ function App() {
     <Route path="/termscondition" element={<TermsCondition />} />
     <Route path="/membership" element={<Membership />} />
     <Route path="/class" element={<Class />} />
+    <Route path="/forgotpassword" element={<ForgotPassword />} />
   </Routes>
-  )
+  );
 }
 
 export default App;
