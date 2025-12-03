@@ -13,3 +13,7 @@ yarn-error.log*
 
 # Editor directories
 .vscode/
+
+# env files
+.env
+.env*
