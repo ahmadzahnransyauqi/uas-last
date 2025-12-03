@@ -8,12 +8,11 @@ export default function Profile() {
   const [profile, setProfile] = useState({
     name: 'John Anderson',
     email: 'john.anderson@email.com',
-    phone: '+1 (555) 123-4567',
+    phone: '-',
     joinDate: 'October 1, 2025',
-    location: 'New York, NY',
+    location: '-',
     goals: 'Build muscle and increase strength',
     membershipType: 'Premium',
-    emergencyContact: 'Jane Anderson - (555) 987-6543',
     memberId: 'GYM-2025-10234'
   });
 
@@ -210,28 +209,6 @@ export default function Profile() {
                 />
               ) : (
                 <p style={{ color: '#ffffff' }}>{profile.goals}</p>
-              )}
-            </div>
-
-            <div>
-              <label className="flex items-center gap-2 mb-2" style={{ color: '#9CA3AF' }}>
-                <Phone size={18} />
-                Emergency Contact
-              </label>
-              {isEditing ? (
-                <input
-                  type="text"
-                  value={editedProfile.emergencyContact}
-                  onChange={(e) => setEditedProfile({ ...editedProfile, emergencyContact: e.target.value })}
-                  className="w-full px-4 py-2 rounded-lg"
-                  style={{
-                    backgroundColor: '#1a1a1a',
-                    color: '#ffffff',
-                    border: '1px solid #252525'
-                  }}
-                />
-              ) : (
-                <p style={{ color: '#ffffff' }}>{profile.emergencyContact}</p>
               )}
             </div>
 

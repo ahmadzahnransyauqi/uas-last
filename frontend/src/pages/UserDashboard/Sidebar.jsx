@@ -5,25 +5,34 @@ import {
   User,
   Settings,
   Home,
+  LogOut,
 } from "lucide-react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
+import { useAuth } from "../../hook/useAuth";
 import logoimg from "../../assets/logotext.png";
 
 export default function Sidebar() {
   const location = useLocation();
+  const navigate = useNavigate();
+  const { logout } = useAuth();
 
   const menuItems = [
     { id: "/user", label: "Dashboard", icon: Home },
-    {id: "/user/personaltraining", label: "Personal Training", icon: Users },
     { id: "/user/bodyassessment", label: "Body Assessment", icon: Activity },
     { id: "/user/nutritionguidance", label: "Nutrition Guidance", icon: Apple },
     { id: "/user/groupclasses", label: "Group Classes", icon: Users },
     { id: "/user/profile", label: "Profile", icon: User },
-    { id: "/user/settings", label: "Settings", icon: Settings },
   ];
 
+  const handleLogout = () => {
+    if (window.confirm("Are you sure you want to logout?")) {
+      logout(); // clear localStorage & state
+      navigate("/login"); // redirect to login
+    }
+  };
+
   return (
-    <aside className="w-64 shrink-0 p-6" style={{ backgroundColor: "#202020" }}>
+    <aside className="w-64 h-screen shrink-0 p-6" style={{ backgroundColor: "#202020" }}>
       <div className="mb-8">
         <img src={logoimg} alt="Logo" />
       </div>
@@ -49,6 +58,19 @@ export default function Sidebar() {
           );
         })}
       </nav>
+
+      <button
+        onClick={handleLogout}
+        className="w-full flex items-center gap-3 px-4 py-3 rounded-lg transition-colors hover:opacity-80 mt-4"
+        style={{
+          backgroundColor: "#1a1a1a",
+          color: "#ff1f1f",
+          border: "1px solid #ff1f1f",
+        }}
+      >
+        <LogOut size={20} />
+        <span>Logout</span>
+      </button>
     </aside>
   );
 }
