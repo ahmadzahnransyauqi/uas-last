@@ -1,6 +1,6 @@
 import { FaInstagram, FaFacebook, FaYoutube, FaTiktok } from "react-icons/fa";
 import { Link } from "react-router-dom";
-import logoText from "../assets/logotext.png";
+import logoText from "../../assets/logotext.png";
 
 export default function Footer() {
   return (

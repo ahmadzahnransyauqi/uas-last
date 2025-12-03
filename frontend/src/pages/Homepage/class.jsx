@@ -1,5 +1,5 @@
-import Footer from "../../component/footer";
-import Header from "../../component/header";
+import Footer from "../../component/homepage/footer";
+import Header from "../../component/homepage/header";
 import Boxing from "../../assets/BoxingClass.webp";
 import DanceIcon from "../../assets/Group.svg";
 import CardioIcon from "../../assets/XMLID_8_.svg";
@@ -9,7 +9,7 @@ import DanceClass from "../../assets/DanceClass.webp";
 import CardioClass from "../../assets/CardioClass.webp";
 import StrengthClass from "../../assets/StrengthClass.webp";
 import MindBodyClass from "../../assets/MindBodyClass.webp";
-import Loading from "../../component/loading";
+import Loading from "../../component/homepage/loading";
 
 export default function Class() {
   const classList = [

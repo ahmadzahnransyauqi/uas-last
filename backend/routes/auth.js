@@ -3,6 +3,7 @@ const router = express.Router();
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const pool = require("../config/db");
+const authMiddleware = require("../middleware/authMiddleWare");
 
 // --- REGISTER ---
 router.post("/register", async (req, res) => {
@@ -67,7 +68,7 @@ router.post("/login", async (req, res) => {
     const token = jwt.sign(
       { id: user.id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: "1h" }
+      { expiresIn: "7d" } // was "1h"
     );
 
     res.json({
@@ -78,6 +79,10 @@ router.post("/login", async (req, res) => {
     console.error(err.message);
     res.status(500).json({ error: "Server Error saat Login" });
   }
+});
+
+router.get("/verify", authMiddleware, (req, res) => {
+  return res.json({ valid: true, user: req.user });
 });
 
 module.exports = router;

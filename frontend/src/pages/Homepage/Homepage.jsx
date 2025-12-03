@@ -1,12 +1,12 @@
-import Header from "../../component/header.jsx";
+import Header from "../../component/homepage/header.jsx";
 import heroImage from "../../assets/pria-hitamberotot-ini.webp";
 import PeopleIcon from "../../assets/person-svgrepo-com.svg?react";
 import CoachIcon from "../../assets/coach-svgrepo-com.svg?react";
 import DanceIcon from "../../assets/Group.svg";
 import CardioIcon from "../../assets/XMLID_8_.svg";
 import StrengthIcon from "../../assets/dumbbell-svgrepo-com1.svg";
-import TestimonialList from "../../component/testimonial-card.jsx";
-import Footer from "../../component/footer.jsx";
+import TestimonialList from "../../component/homepage/testimonial-card.jsx";
+import Footer from "../../component/homepage/footer.jsx";
 import BodyAssesment from "../../assets/BodyAssesment.webp";
 import GroupClasses from "../../assets/GroupClasses.webp";
 import NutritionGuidance from "../../assets/NutritionGuidance.webp";
@@ -16,14 +16,26 @@ import Boxing from "../../assets/BoxingClass.webp";
 import Piloxing from "../../assets/PiloxingClass.webp";
 import Zumba from "../../assets/ZumbaClass.webp";
 import { Link } from "react-router-dom";
-import FacilitiesSlider from "../../component/box-can-scroll.jsx";
-import MembershipLayout from "../../component/membership-layout.jsx";
+import FacilitiesSlider from "../../component/homepage/box-can-scroll.jsx";
+import MembershipLayout from "../../component/homepage/membership-layout.jsx";
+import { useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "../../hook/useAuth";
 
 export default function Home() {
+  const { isLoading, isAuthenticated, role } = useAuth();
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (isLoading) return;
+    if (!isAuthenticated) return;
+    if (role === "admin") navigate("/admin");
+    else navigate("/user");
+  }, [isLoading, isAuthenticated, role, navigate]);
   return (
     <>
       <Header />
-      
+
       {/* 1. Hero Section */}
       <div
         className="
@@ -45,7 +57,7 @@ export default function Home() {
       >
         {/* Overlay for better text readability */}
         <div className="absolute inset-0 bg-black/30 rounded-lg"></div>
-        
+
         {/* Hero Text Content (Higher Z-Index) */}
         <div className="relative z-10">
           <h1
@@ -61,9 +73,9 @@ export default function Home() {
             "
             style={{
               // Original gradient text effect
-              backgroundImage: 'linear-gradient(to right, #ff0000, #ffffff)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
+              backgroundImage: "linear-gradient(to right, #ff0000, #ffffff)",
+              WebkitBackgroundClip: "text",
+              WebkitTextFillColor: "transparent",
               textShadow: "3px 3px 6px rgba(0,0,0,0.5)",
             }}
           >
@@ -93,7 +105,7 @@ export default function Home() {
             Let's Start
           </Link>
         </div>
-        
+
         {/* Bottom Tagline */}
         <h3
           className="relative z-10 text-xl sm:text-2xl md:text-[30px] font-semibold text-white max-w-sm md:max-w-lg"
@@ -103,20 +115,25 @@ export default function Home() {
           your stamina, and reach your prime era
         </h3>
       </div>
-      
+
       {/* 2. Stats Section (Members/Coaches) */}
       <div className="w-full max-w-7xl mx-auto p-4 md:p-8 bg-[#ff1f1f] rounded-lg mt-10 md:mt-15 flex flex-col sm:flex-row justify-around items-center gap-6 sm:gap-10 md:gap-20">
         <div className="flex items-center gap-4 text-white">
           <PeopleIcon className="w-10 h-10 md:w-16 md:h-16 fill-white stroke-white shrink-0" />
-          <h1 className="text-3xl md:text-5xl font-bold whitespace-nowrap">600+ Members</h1>
+          <h1 className="text-3xl md:text-5xl font-bold whitespace-nowrap">
+            600+ Members
+          </h1>
         </div>
-        <div className="w-0.5 h-16 bg-white/50 hidden sm:block"></div> {/* Separator */}
+        <div className="w-0.5 h-16 bg-white/50 hidden sm:block"></div>{" "}
+        {/* Separator */}
         <div className="flex items-center gap-4 text-white">
           <CoachIcon className="w-10 h-10 md:w-16 md:h-16 fill-white stroke-white shrink-0" />
-          <h1 className="text-3xl md:text-5xl font-bold whitespace-nowrap">50+ Coaches</h1>
+          <h1 className="text-3xl md:text-5xl font-bold whitespace-nowrap">
+            50+ Coaches
+          </h1>
         </div>
       </div>
-      
+
       {/* 3. Our Services Section */}
       <div className="mt-20 px-4">
         <h2 className="text-white text-3xl font-bold text-center">
@@ -125,7 +142,7 @@ export default function Home() {
         <h3 className="text-white text-lg md:text-xl font-normal text-center mb-12">
           Fit for your need
         </h3>
-        
+
         {/* Services Grid/Layout */}
         <div className="w-full max-w-7xl mx-auto flex flex-wrap justify-center md:justify-around items-end gap-y-12 gap-x-6">
           {/* Personal Training (No translation needed for mobile) */}
@@ -170,7 +187,8 @@ export default function Home() {
               Nutrition Guidance
             </p>
             <p className="text-white mb-3 text-base text-center max-w-[280px] hidden md:block">
-              Nutrition advice for better training results and a healthier lifestyle
+              Nutrition advice for better training results and a healthier
+              lifestyle
             </p>
             <div
               className="w-full h-80 bg-[#ff1f1f] rounded-lg shadow-lg"
@@ -181,7 +199,8 @@ export default function Home() {
               }}
             ></div>
             <p className="text-white mb-3 text-base text-center max-w-[280px] block md:hidden">
-              Nutrition advice for better training results and a healthier lifestyle
+              Nutrition advice for better training results and a healthier
+              lifestyle
             </p>
           </div>
 
@@ -201,13 +220,13 @@ export default function Home() {
                 backgroundPosition: "center",
               }}
             ></div>
-             <p className="text-white mb-3 text-base text-center max-w-[280px] block md:hidden">
+            <p className="text-white mb-3 text-base text-center max-w-[280px] block md:hidden">
               Regular body evaluation to track your fitness progress.
             </p>
           </div>
         </div>
       </div>
-      
+
       {/* 4. Unlimited Classes Section */}
       <div className="mt-20 md:mt-32 flex flex-col justify-center px-4">
         <div>
@@ -218,16 +237,43 @@ export default function Home() {
             Designed just for you
           </p>
         </div>
-        
+
         {/* Classes Grid */}
         <div className="w-full max-w-7xl mx-auto grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-          
           {/* Class Card Helper Function (Inline Array of Data) */}
           {[
-            { img: Zumba, name: "Zumba", type: "Dance", color: "#FF6666", icon: DanceIcon, intensity: "Beginner" },
-            { img: BellyDance, name: "Belly Dance", type: "Dance", color: "#FF6666", icon: DanceIcon, intensity: "Intermediate" },
-            { img: Piloxing, name: "Piloxing", type: "Cardio", color: "#7D6EFF", icon: CardioIcon, intensity: "Beginner" },
-            { img: Boxing, name: "Boxing", type: "Strength", color: "#4EFF69", icon: StrengthIcon, intensity: "Advanced" },
+            {
+              img: Zumba,
+              name: "Zumba",
+              type: "Dance",
+              color: "#FF6666",
+              icon: DanceIcon,
+              intensity: "Beginner",
+            },
+            {
+              img: BellyDance,
+              name: "Belly Dance",
+              type: "Dance",
+              color: "#FF6666",
+              icon: DanceIcon,
+              intensity: "Intermediate",
+            },
+            {
+              img: Piloxing,
+              name: "Piloxing",
+              type: "Cardio",
+              color: "#7D6EFF",
+              icon: CardioIcon,
+              intensity: "Beginner",
+            },
+            {
+              img: Boxing,
+              name: "Boxing",
+              type: "Strength",
+              color: "#4EFF69",
+              icon: StrengthIcon,
+              intensity: "Advanced",
+            },
           ].map((cls, index) => (
             <div key={index} className="flex flex-col items-center w-full">
               <div
@@ -240,12 +286,13 @@ export default function Home() {
               >
                 {/* Gradient Overlay for Text */}
                 <div className="absolute inset-0 bg-linear-to-t from-black/80 to-transparent"></div>
-                
+
                 {/* Type Tag */}
-                <div 
-                  className="absolute top-4 right-4 w-[100px] h-10 bg-[#444444] rounded-lg flex items-center justify-center gap-1 z-10 p-2"
-                >
-                  <span className={`font-bold text-xs`} style={{ color: cls.color }}>
+                <div className="absolute top-4 right-4 w-[100px] h-10 bg-[#444444] rounded-lg flex items-center justify-center gap-1 z-10 p-2">
+                  <span
+                    className={`font-bold text-xs`}
+                    style={{ color: cls.color }}
+                  >
                     {cls.type}
                   </span>
                   <img src={cls.icon} alt={cls.type} className="w-4 h-4" />
@@ -264,7 +311,7 @@ export default function Home() {
             </div>
           ))}
         </div>
-        
+
         {/* View More Button */}
         <div className="mt-10 mb-16 flex justify-center">
           <Link
@@ -285,18 +332,50 @@ export default function Home() {
           </Link>
         </div>
       </div>
-      
+
       {/* 5. Facilities Slider (Component is assumed responsive) */}
       <FacilitiesSlider />
-      
+
       {/* 6. Membership Plans (Component is assumed responsive from previous fixes) */}
       <div className="mt-20">
         <MembershipLayout
           title="Membership Plans"
           plans={[
-            { name: "Basic", price: "Rp 150.000/month", bg: "#444444", highlight: false, benefits: ["Regular gym access", "1x trainer consultation", "Access to public lockers"] },
-            { name: "Premium", price: "Rp 300.000/month", bg: "#ff1f1f", highlight: true, benefits: ["Full gym access", "4x personal trainer sessions", "Access to group classes", "Private locker"] },
-            { name: "Elite", price: "Rp 500.000/month", bg: "#444444", highlight: false, benefits: ["24-hour access", "8x personal trainer sessions", "Monthly body assessment", "Free merchandise"] },
+            {
+              name: "Basic",
+              price: "Rp 150.000/month",
+              bg: "#444444",
+              highlight: false,
+              benefits: [
+                "Regular gym access",
+                "1x trainer consultation",
+                "Access to public lockers",
+              ],
+            },
+            {
+              name: "Premium",
+              price: "Rp 300.000/month",
+              bg: "#ff1f1f",
+              highlight: true,
+              benefits: [
+                "Full gym access",
+                "4x personal trainer sessions",
+                "Access to group classes",
+                "Private locker",
+              ],
+            },
+            {
+              name: "Elite",
+              price: "Rp 500.000/month",
+              bg: "#444444",
+              highlight: false,
+              benefits: [
+                "24-hour access",
+                "8x personal trainer sessions",
+                "Monthly body assessment",
+                "Free merchandise",
+              ],
+            },
           ]}
         />
       </div>
@@ -312,7 +391,7 @@ export default function Home() {
         {/* TestimonialList component handles its own layout, assumed responsive */}
         <TestimonialList />
       </div>
-      
+
       <Footer />
     </>
   );

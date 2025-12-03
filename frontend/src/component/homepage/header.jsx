@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import logoText from "../assets/logotext.png";
+import logoText from "../../assets/logotext.png";
 import Regist from "./registration.jsx";
 import { Link } from "react-router-dom";
 

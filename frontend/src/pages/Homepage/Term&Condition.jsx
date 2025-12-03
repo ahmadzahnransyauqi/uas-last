@@ -1,28 +1,27 @@
-import Footer from "../../component/footer";
-import Header from "../../component/header";
+import Footer from "../../component/homepage/footer";
+import Header from "../../component/homepage/header";
 
 export default function TermsCondition() {
   return (
     <>
       <Header />
-      
+
       {/* Content Wrapper: Centers content and limits width for readability */}
       <div className="text-white max-w-4xl mx-auto px-4 sm:px-6 md:px-8 py-10">
-        
         {/* Main Title */}
         <h2 className="font-extrabold text-3xl md:text-4xl text-center mb-6 text-[#ff1f1f]">
           Terms & Conditions
         </h2>
-        
+
         <p className="font-semibold text-lg text-gray-300 mb-8 leading-relaxed">
-          Welcome to **Roger Sumatera Gym** (“we,” “our,” or “us”). By accessing or
-          using our website and services, you agree to comply with and be bound by
-          the following Terms and Conditions. Please read them carefully before
-          using our site or becoming a member.
+          Welcome to **Roger Sumatera Gym** (“we,” “our,” or “us”). By accessing
+          or using our website and services, you agree to comply with and be
+          bound by the following Terms and Conditions. Please read them
+          carefully before using our site or becoming a member.
         </p>
 
         <hr className="border-gray-700 my-8" />
-        
+
         {/* === Acceptance of Terms === */}
         <h3 className="font-bold text-xl md:text-2xl mt-5 mb-2">
           1. Acceptance of Terms
@@ -41,14 +40,16 @@ export default function TermsCondition() {
           2. Membership and Registration
         </h3>
         <ul className="list-disc ml-6 space-y-2 text-base md:text-lg text-gray-200">
-          <li>You must be at least **18 years old** to register for a membership.</li>
+          <li>
+            You must be at least **18 years old** to register for a membership.
+          </li>
           <li>
             Members are responsible for maintaining the confidentiality of their
             account credentials.
           </li>
           <li>
-            Memberships are **non-transferable and non-refundable**, except where
-            required by law or specifically stated otherwise.
+            Memberships are **non-transferable and non-refundable**, except
+            where required by law or specifically stated otherwise.
           </li>
           <li>
             Roger Sumatera Gym reserves the right to suspend or terminate
@@ -56,7 +57,7 @@ export default function TermsCondition() {
             facility.
           </li>
         </ul>
-        
+
         {/* --- */}
 
         {/* === Payments and Billing === */}
@@ -75,9 +76,11 @@ export default function TermsCondition() {
           <li>
             All prices and packages are subject to change with **prior notice**.
           </li>
-          <li>Promotional offers cannot be combined unless explicitly stated.</li>
+          <li>
+            Promotional offers cannot be combined unless explicitly stated.
+          </li>
         </ul>
-        
+
         {/* --- */}
 
         {/* === Facility and Equipment Usage === */}
@@ -92,8 +95,9 @@ export default function TermsCondition() {
           <li>Proper athletic attire and shoes are required.</li>
           <li>Members must use equipment safely and respectfully.</li>
           <li>
-            Roger Sumatera Gym is **not liable for injuries** resulting from improper
-            equipment use, failure to follow safety guidelines, or negligence.
+            Roger Sumatera Gym is **not liable for injuries** resulting from
+            improper equipment use, failure to follow safety guidelines, or
+            negligence.
           </li>
         </ul>
 
@@ -136,7 +140,7 @@ export default function TermsCondition() {
           </li>
           <li>Members are advised to avoid bringing valuables into the gym.</li>
         </ul>
-        
+
         {/* --- */}
 
         {/* === Website User and Content === */}
@@ -154,8 +158,8 @@ export default function TermsCondition() {
           </li>
           <li>
             All website content — including text, images, videos, and logos — is
-            **owned by Roger Sumatera Gym and protected by copyright**. Unauthorized
-            use is prohibited.
+            **owned by Roger Sumatera Gym and protected by copyright**.
+            Unauthorized use is prohibited.
           </li>
         </ul>
 
@@ -167,8 +171,8 @@ export default function TermsCondition() {
         </h3>
         <ul className="list-disc ml-6 space-y-2 text-base md:text-lg text-gray-200">
           <li>
-            Membership cancellation requests must be made at least **7 days** before
-            the next billing cycle.
+            Membership cancellation requests must be made at least **7 days**
+            before the next billing cycle.
           </li>
           <li>
             Certain plans or promotional memberships may have specific
@@ -179,7 +183,7 @@ export default function TermsCondition() {
             management approval.
           </li>
         </ul>
-        
+
         {/* --- */}
 
         {/* === Limitation of Liability === */}
@@ -188,26 +192,25 @@ export default function TermsCondition() {
         </h3>
         <ul className="list-disc ml-6 space-y-2 text-base md:text-lg text-gray-200">
           <li>
-            Roger Sumatera Gym, its staff, and affiliates shall not be held liable
-            for any damages, injuries, or losses arising from participation in gym
-            activities or use of the website.
+            Roger Sumatera Gym, its staff, and affiliates shall not be held
+            liable for any damages, injuries, or losses arising from
+            participation in gym activities or use of the website.
           </li>
           <li>
             Members assume full responsibility for their personal safety and
             fitness decisions.
           </li>
         </ul>
-        
+
         <hr className="border-gray-700 my-8" />
 
         {/* Final Statement */}
         <p className="font-semibold text-lg leading-relaxed mt-5 text-gray-300">
-          **Roger Sumatera Gym reserves the right to modify or update these Terms
-          and Conditions at any time.** Any changes will be posted on this page, and
-          continued use of our services after such changes constitutes acceptance
-          of the revised terms.
+          **Roger Sumatera Gym reserves the right to modify or update these
+          Terms and Conditions at any time.** Any changes will be posted on this
+          page, and continued use of our services after such changes constitutes
+          acceptance of the revised terms.
         </p>
-
       </div>
       <Footer />
     </>

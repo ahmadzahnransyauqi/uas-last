@@ -1,6 +1,6 @@
-import Footer from "../../component/footer";
-import Header from "../../component/header";
-import InputField from "../../component/input-slot";
+import Footer from "../../component/homepage/footer";
+import Header from "../../component/homepage/header";
+import InputField from "../../component/homepage/input-slot";
 import { Link, useNavigate } from "react-router-dom";
 import BeratCok from "../../assets/Berat_cok.webp";
 import { useState } from "react";
@@ -31,7 +31,12 @@ export default function Register() {
       const res = await fetch("/api/auth/register", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ username: name, email, password, role: 'member' }),
+        body: JSON.stringify({
+          username: name,
+          email,
+          password,
+          role: "member",
+        }),
       });
       const data = await res.json();
       if (!res.ok) {
@@ -76,7 +81,10 @@ export default function Register() {
           <h2 className="text-3xl font-extrabold mb-1">Create Your Account</h2>
           <h3 className="text-sm mb-6 text-gray-300">
             Already have an account?{" "}
-            <Link to="/login" className="text-[#ff1f1f] hover:text-[#ff6161] font-semibold transition-colors">
+            <Link
+              to="/login"
+              className="text-[#ff1f1f] hover:text-[#ff6161] font-semibold transition-colors"
+            >
               Log In
             </Link>
           </h3>
@@ -138,7 +146,10 @@ export default function Register() {
               />
               <label className="text-sm text-gray-300" htmlFor="terms">
                 I Accept the{" "}
-                <Link className="text-[#ff1f1f] hover:text-[#ff6161] hover:underline" to="/termscondition">
+                <Link
+                  className="text-[#ff1f1f] hover:text-[#ff6161] hover:underline"
+                  to="/termscondition"
+                >
                   Terms & Conditions
                 </Link>
               </label>

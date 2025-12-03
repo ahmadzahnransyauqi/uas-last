@@ -1,5 +1,5 @@
-import Footer from "../../component/footer";
-import Header from "../../component/header";
+import Footer from "../../component/homepage/footer";
+import Header from "../../component/homepage/header";
 import GymImage from "../../assets/ruanganGym.webp";
 import rogerSumateraMeme from "../../assets/rogerSumateraMeme.webp";
 import blackSuperman from "../../assets/blackSuperman.webp";

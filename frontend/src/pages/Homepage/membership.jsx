@@ -1,6 +1,6 @@
-import Footer from "../../component/footer";
-import Header from "../../component/header";
-import MembershipLayout from "../../component/membership-layout";
+import Footer from "../../component/homepage/footer";
+import Header from "../../component/homepage/header";
+import MembershipLayout from "../../component/homepage/membership-layout";
 
 export default function Membership() {
   // Define plan data outside of the return for cleaner rendering
@@ -121,29 +121,28 @@ export default function Membership() {
     },
   ];
 
-
   return (
     <>
       <Header />
       <h2 className="text-white font-bold text-4xl md:text-[50px] text-center mt-12 mb-8">
         Membership
       </h2>
-      
+
       {/* Weekly Plans */}
       <MembershipLayout title="Weekly Plans" plans={weeklyPlans} />
-      
+
       {/* Separator height increased for mobile and desktop consistency */}
-      <div className="w-full h-16 md:h-20"></div> 
-      
+      <div className="w-full h-16 md:h-20"></div>
+
       {/* Monthly Plans */}
       <MembershipLayout title="Monthly Plans" plans={monthlyPlans} />
-      
+
       {/* Separator height increased for mobile and desktop consistency */}
-      <div className="w-full h-16 md:h-20"></div> 
-      
+      <div className="w-full h-16 md:h-20"></div>
+
       {/* Yearly Plans */}
       <MembershipLayout title="Yearly Plans" plans={yearlyPlans} />
-      
+
       <div className="w-full h-12"></div>
       <Footer />
     </>

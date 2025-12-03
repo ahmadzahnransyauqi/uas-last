@@ -1,9 +1,9 @@
 import { useRef, useState, useEffect } from "react";
-import OutdoorGym from "../assets/OutdoorGym.webp";
-import LockerRoom from "../assets/LockerRoom.webp";
-import Cafeteria from "../assets/Cafeteria.webp";
-import GymRoom from "../assets/GymRoom.webp";
-import Sauna from "../assets/Sauna.webp";
+import OutdoorGym from "../../assets/OutdoorGym.webp";
+import LockerRoom from "../../assets/LockerRoom.webp";
+import Cafeteria from "../../assets/Cafeteria.webp";
+import GymRoom from "../../assets/GymRoom.webp";
+import Sauna from "../../assets/Sauna.webp";
 
 export default function FacilitiesSlider() {
   const scrollRef = useRef(null);
