@@ -33,9 +33,11 @@ const C = {
   textMuted: "#9CA3AF",
 };
 
+
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const navigate = useNavigate();
+  const [logoutModal, setLogoutModal] = useState(false);
 
   return (
     <div
@@ -91,9 +93,7 @@ const AdminDashboard = () => {
 
         <div className="p-5 border-t border-[#333]">
           <button
-            onClick={() =>
-              confirm("Are you sure you want to logout?") && navigate("/")
-            }
+            onClick={() => setLogoutModal(true)}
             className="w-full py-3 rounded font-bold text-white flex items-center justify-center gap-2 shadow-lg hover:shadow-red-900/50 hover:-translate-y-0.5 transition-all"
             style={{ backgroundColor: C.accent }}
           >
@@ -125,6 +125,32 @@ const AdminDashboard = () => {
           {activeTab === "classes" && <ManageClasses />}
         </div>
       </main>
+
+      {/* Custom Logout Modal */}
+      <Modal
+        isOpen={logoutModal}
+        onClose={() => setLogoutModal(false)}
+        title="Confirm Logout"
+      >
+        <p className="text-gray-300 mb-6">Are you sure you want to logout?</p>
+        <div className="flex gap-4">
+          <button
+            onClick={() => {
+              setLogoutModal(false);
+              navigate("/");
+            }}
+            className="flex-1 bg-[#ff1f1f] hover:bg-[#ff6161] text-white py-3 rounded-lg font-bold transition"
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => setLogoutModal(false)}
+            className="flex-1 bg-[#333] hover:bg-[#444] text-white py-3 rounded-lg font-bold transition"
+          >
+            No
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };
@@ -312,6 +338,11 @@ const ManageUsers = () => {
   const [modal, setModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [form, setForm] = useState({});
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
+  const [passwordAlert, setPasswordAlert] = useState(false);
+  const [successAlert, setSuccessAlert] = useState(false);
+  const [operationFailedAlert, setOperationFailedAlert] = useState(false);
+  const [deleteFailedAlert, setDeleteFailedAlert] = useState(false);
 
   const fetch = () =>
     axios.get(`${API_URL}/users`).then((res) => setUsers(res.data));
@@ -332,24 +363,21 @@ const ManageUsers = () => {
 
   const submit = async (e) => {
     e.preventDefault();
-    if (!editData && form.password.length < 6)
-      return alert("Password must be at least 6 characters!");
+    if (!editData && form.password.length < 6) {
+      setPasswordAlert(true);
+      return;
+    }
     try {
       if (editData) await axios.put(`${API_URL}/users/${editData.id}`, form);
       else await axios.post(`${API_URL}/users`, form);
       setModal(false);
       fetch();
-      alert("Success!");
+      setSuccessAlert(true);
     } catch {
-      alert("Operation Failed");
+      setOperationFailedAlert(true);
     }
   };
-  const del = async (id) => {
-    if (confirm("Permanently delete this user?")) {
-      await axios.delete(`${API_URL}/users/${id}`);
-      fetch();
-    }
-  };
+  const del = (id) => setDeleteModal({ open: true, id });
 
   return (
     <div>
@@ -420,6 +448,94 @@ const ManageUsers = () => {
           <SubmitBtn label={editData ? "SAVE CHANGES" : "CREATE USER"} />
         </form>
       </Modal>
+
+      {/* Custom Delete Modal */}
+      <Modal
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, id: null })}
+        title="Confirm Delete"
+      >
+        <p className="text-gray-300 mb-6">Permanently delete this user?</p>
+        <div className="flex gap-4">
+          <button
+            onClick={async () => {
+              try {
+                await axios.delete(`${API_URL}/users/${deleteModal.id}`);
+                fetch();
+                setDeleteModal({ open: false, id: null });
+              } catch {
+                setDeleteFailedAlert(true);
+              }
+            }}
+            className="flex-1 bg-[#ff1f1f] hover:bg-[#ff6161] text-white py-3 rounded-lg font-bold transition"
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => setDeleteModal({ open: false, id: null })}
+            className="flex-1 bg-[#333] hover:bg-[#444] text-white py-3 rounded-lg font-bold transition"
+          >
+            No
+          </button>
+        </div>
+      </Modal>
+
+      {/* Custom Alert Modals */}
+      <Modal
+        isOpen={passwordAlert}
+        onClose={() => setPasswordAlert(false)}
+        title="Alert"
+      >
+        <p className="text-gray-300 mb-6">Password must be at least 6 characters!</p>
+        <button
+          onClick={() => setPasswordAlert(false)}
+          className="w-full bg-[#ff1f1f] hover:bg-[#ff6161] text-white py-3 rounded-lg font-bold transition"
+        >
+          OK
+        </button>
+      </Modal>
+
+      <Modal
+        isOpen={successAlert}
+        onClose={() => setSuccessAlert(false)}
+        title="Success"
+      >
+        <p className="text-gray-300 mb-6">Success!</p>
+        <button
+          onClick={() => setSuccessAlert(false)}
+          className="w-full bg-[#ff1f1f] hover:bg-[#ff6161] text-white py-3 rounded-lg font-bold transition"
+        >
+          OK
+        </button>
+      </Modal>
+
+      <Modal
+        isOpen={operationFailedAlert}
+        onClose={() => setOperationFailedAlert(false)}
+        title="Error"
+      >
+        <p className="text-gray-300 mb-6">Operation Failed</p>
+        <button
+          onClick={() => setOperationFailedAlert(false)}
+          className="w-full bg-[#ff1f1f] hover:bg-[#ff6161] text-white py-3 rounded-lg font-bold transition"
+        >
+          OK
+        </button>
+      </Modal>
+
+      <Modal
+        isOpen={deleteFailedAlert}
+        onClose={() => setDeleteFailedAlert(false)}
+        title="Error"
+      >
+        <p className="text-gray-300 mb-6">Delete Failed</p>
+        <button
+          onClick={() => setDeleteFailedAlert(false)}
+          className="w-full bg-[#ff1f1f] hover:bg-[#ff6161] text-white py-3 rounded-lg font-bold transition"
+        >
+          OK
+        </button>
+      </Modal>
     </div>
   );
 };
@@ -430,6 +546,7 @@ const ManagePromos = () => {
   const [modal, setModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [form, setForm] = useState({});
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
 
   const fetch = () =>
     axios.get(`${API_URL}/promos`).then((res) => setPromos(res.data));
@@ -451,7 +568,7 @@ const ManagePromos = () => {
     });
     setModal(true);
   };
-  const submit = async (e) => {
+    const submit = async (e) => {
     e.preventDefault();
     editData
       ? await axios.put(`${API_URL}/promos/${editData.id}`, form)
@@ -459,12 +576,7 @@ const ManagePromos = () => {
     setModal(false);
     fetch();
   };
-  const del = async (id) => {
-    if (confirm("Delete promo?")) {
-      await axios.delete(`${API_URL}/promos/${id}`);
-      fetch();
-    }
-  };
+  const del = (id) => setDeleteModal({ open: true, id });
 
   return (
     <div>
@@ -529,80 +641,152 @@ const ManagePromos = () => {
           <SubmitBtn label="SAVE PROMOTION" />
         </form>
       </Modal>
+
+      {/* Custom Delete Modal */}
+      <Modal
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, id: null })}
+        title="Confirm Delete"
+      >
+        <p className="text-gray-300 mb-6">Delete promo?</p>
+        <div className="flex gap-4">
+          <button
+            onClick={async () => {
+              try {
+                await axios.delete(`${API_URL}/promos/${deleteModal.id}`);
+                fetch();
+                setDeleteModal({ open: false, id: null });
+              } catch {
+                alert("Delete Failed");
+              }
+            }}
+            className="flex-1 bg-[#ff1f1f] hover:bg-[#ff6161] text-white py-3 rounded-lg font-bold transition"
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => setDeleteModal({ open: false, id: null })}
+            className="flex-1 bg-[#333] hover:bg-[#444] text-white py-3 rounded-lg font-bold transition"
+          >
+            No
+          </button>
+        </div>
+      </Modal>
     </div>
   );
 };
 
-// --- 4. MANAGE PLANS ---
 const ManagePlans = () => {
   const [plans, setPlans] = useState([]);
   const [modal, setModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [form, setForm] = useState({});
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
 
   const fetch = () =>
     axios.get(`${API_URL}/plans`).then((res) => setPlans(res.data));
+
   useEffect(() => {
     fetch();
   }, []);
 
   const openAdd = () => {
     setEditData(null);
-    setForm({ name: "", price: "", duration: 30, benefits: "" });
+    setForm({
+      name: "",
+      price: "",
+      duration: 30, // temp variable for form
+      benefits: "",
+    });
     setModal(true);
   };
+
   const openEdit = (p) => {
     setEditData(p);
-    setForm({ ...p, duration: p.duration_days });
+
+    setForm({
+      name: p.name,
+      price: p.price,
+      duration: p.duration_days, // convert DB -> form
+      benefits: Array.isArray(p.benefits)
+        ? p.benefits.join(", ")
+        : p.benefits || "",
+    });
+
     setModal(true);
   };
+
   const submit = async (e) => {
     e.preventDefault();
-    editData
-      ? await axios.put(`${API_URL}/plans/${editData.id}`, form)
-      : await axios.post(`${API_URL}/plans`, form);
+
+    // create payload for backend
+    const payload = {
+      name: form.name,
+      price: form.price,
+      duration_days: Number(form.duration), // convert form -> DB
+      benefits: form.benefits, // comma separated string
+    };
+
+    if (editData) {
+      await axios.put(`${API_URL}/plans/${editData.id}`, payload);
+    } else {
+      await axios.post(`${API_URL}/plans`, payload);
+    }
+
     setModal(false);
     fetch();
   };
-  const del = async (id) => {
-    if (confirm("Delete plan?")) {
-      await axios.delete(`${API_URL}/plans/${id}`);
-      fetch();
-    }
-  };
+
+  const del = (id) => setDeleteModal({ open: true, id });
 
   return (
     <div>
       <div className="flex justify-end mb-6">
         <AddBtn onClick={openAdd} label="ADD MEMBERSHIP PLAN" />
       </div>
+
       <div className="grid md:grid-cols-3 gap-6">
-        {plans.map((p) => (
-          <div
-            key={p.id}
-            className="bg-[#202020] p-6 rounded border-t-4 border-[#ff1f1f] hover:scale-105 transition shadow-xl group relative"
-          >
-            <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition">
-              <button onClick={() => openEdit(p)} className="text-blue-500">
-                <FaEdit />
-              </button>
-              <button onClick={() => del(p.id)} className="text-red-500">
-                <FaTrash />
-              </button>
+        {plans.map((p) => {
+          const benefitList = Array.isArray(p.benefits)
+            ? p.benefits
+            : typeof p.benefits === "string"
+            ? p.benefits.split(",").map((b) => b.trim())
+            : [];
+
+          return (
+            <div
+              key={p.id}
+              className="bg-[#202020] p-6 rounded border-t-4 border-[#ff1f1f] hover:scale-105 transition shadow-xl group relative"
+            >
+              <div className="absolute top-4 right-4 flex gap-2 opacity-0 group-hover:opacity-100 transition">
+                <button onClick={() => openEdit(p)} className="text-blue-500">
+                  <FaEdit />
+                </button>
+                <button onClick={() => del(p.id)} className="text-red-500">
+                  <FaTrash />
+                </button>
+              </div>
+
+              <h3 className="text-xl font-bold text-white">{p.name}</h3>
+
+              <p className="text-3xl font-extrabold text-[#ff1f1f] my-3">
+                Rp {parseInt(p.price).toLocaleString()}
+              </p>
+
+              <p className="text-xs text-gray-500 font-bold uppercase mb-4 tracking-widest">
+                {p.duration_days} DAYS ACCESS
+              </p>
+
+              <ul className="text-sm text-gray-400 border-t border-[#333] pt-4 leading-relaxed list-disc pl-4">
+                {benefitList.map((b, i) => (
+                  <li key={i}>{b}</li>
+                ))}
+              </ul>
             </div>
-            <h3 className="text-xl font-bold text-white">{p.name}</h3>
-            <p className="text-3xl font-extrabold text-[#ff1f1f] my-3">
-              Rp {parseInt(p.price).toLocaleString()}
-            </p>
-            <p className="text-xs text-gray-500 font-bold uppercase mb-4 tracking-widest">
-              {p.duration_days} DAYS ACCESS
-            </p>
-            <p className="text-sm text-gray-400 border-t border-[#333] pt-4 leading-relaxed">
-              {p.benefits}
-            </p>
-          </div>
-        ))}
+          );
+        })}
       </div>
+
       <Modal
         isOpen={modal}
         onClose={() => setModal(false)}
@@ -627,12 +811,44 @@ const ManagePlans = () => {
             onChange={(e) => setForm({ ...form, duration: e.target.value })}
           />
           <Input
-            label="Benefits Description"
+            label="Benefits (comma separated)"
             val={form.benefits}
             onChange={(e) => setForm({ ...form, benefits: e.target.value })}
           />
+
           <SubmitBtn label="SAVE PLAN" />
         </form>
+      </Modal>
+
+      {/* Custom Delete Modal */}
+      <Modal
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, id: null })}
+        title="Confirm Delete"
+      >
+        <p className="text-gray-300 mb-6">Delete plan?</p>
+        <div className="flex gap-4">
+          <button
+            onClick={async () => {
+              try {
+                await axios.delete(`${API_URL}/plans/${deleteModal.id}`);
+                fetch();
+                setDeleteModal({ open: false, id: null });
+              } catch {
+                alert("Delete Failed");
+              }
+            }}
+            className="flex-1 bg-[#ff1f1f] hover:bg-[#ff6161] text-white py-3 rounded-lg font-bold transition"
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => setDeleteModal({ open: false, id: null })}
+            className="flex-1 bg-[#333] hover:bg-[#444] text-white py-3 rounded-lg font-bold transition"
+          >
+            No
+          </button>
+        </div>
       </Modal>
     </div>
   );
@@ -644,6 +860,7 @@ const ManageClasses = () => {
   const [modal, setModal] = useState(false);
   const [editData, setEditData] = useState(null);
   const [form, setForm] = useState({});
+  const [deleteModal, setDeleteModal] = useState({ open: false, id: null });
 
   const fetch = () =>
     axios.get(`${API_URL}/classes`).then((res) => setClasses(res.data));
@@ -712,12 +929,7 @@ const ManageClasses = () => {
     fetch();
   };
 
-  const del = async (id) => {
-    if (confirm("Delete class?")) {
-      await axios.delete(`${API_URL}/classes/${id}`);
-      fetch();
-    }
-  };
+  const del = (id) => setDeleteModal({ open: true, id });
 
   return (
     <div>
@@ -860,6 +1072,37 @@ const ManageClasses = () => {
 
             <SubmitBtn label="SAVE SCHEDULE" />
           </form>
+        </div>
+      </Modal>
+
+      {/* Custom Delete Modal */}
+      <Modal
+        isOpen={deleteModal.open}
+        onClose={() => setDeleteModal({ open: false, id: null })}
+        title="Confirm Delete"
+      >
+        <p className="text-gray-300 mb-6">Delete class?</p>
+        <div className="flex gap-4">
+          <button
+            onClick={async () => {
+              try {
+                await axios.delete(`${API_URL}/classes/${deleteModal.id}`);
+                fetch();
+                setDeleteModal({ open: false, id: null });
+              } catch {
+                alert("Delete Failed");
+              }
+            }}
+            className="flex-1 bg-[#ff1f1f] hover:bg-[#ff6161] text-white py-3 rounded-lg font-bold transition"
+          >
+            Yes
+          </button>
+          <button
+            onClick={() => setDeleteModal({ open: false, id: null })}
+            className="flex-1 bg-[#333] hover:bg-[#444] text-white py-3 rounded-lg font-bold transition"
+          >
+            No
+          </button>
         </div>
       </Modal>
     </div>

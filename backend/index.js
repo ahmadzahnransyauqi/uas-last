@@ -13,6 +13,7 @@ app.use(cors({
 // Middleware
 app.use(cors());
 app.use(express.json());
+app.use("/uploads", express.static("uploads"));
 const authRoutes = require('./routes/auth'); 
 const scanRoutes = require('./routes/scan');
 const editProfileRoutes = require('./routes/edit_profile');
@@ -28,6 +29,9 @@ app.use('/api/admin/classes', require('./routes/admin/classes'));
 app.use('/api/admin/promos', require('./routes/admin/promos'));
 app.use('/api/user/reset&delete', require('./routes/user/resetPass_and_deleteAcc'));
 app.use('/api/edit_profile', editProfileRoutes);
+app.use("/api/memberships", require("./routes/membership_buy"));
+app.use("/api/auth", require("./routes/check-email"));
+app.use("/api/user", require("./routes/resetpassword"));
 
 // Route Cek Server
 app.get('/', (req, res) => {

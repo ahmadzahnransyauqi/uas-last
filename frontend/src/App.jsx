@@ -16,7 +16,7 @@ import Sidebar from "./pages/UserDashboard/Sidebar.jsx";
 import NutritionGuidance from "./pages/UserDashboard/NutritionGuidance.jsx";
 import GroupClasses from "./pages/UserDashboard/GroupClasses.jsx";
 import Settings from "./pages/UserDashboard/Setting.jsx";
-import PersonalTraining from "./pages/UserDashboard/PersonalTraining.jsx";
+import Billing from "./pages/UserDashboard/Billing.jsx";
 
 function UserLayout() {
   return (
@@ -51,6 +51,7 @@ export default function App() {
         <Route path="groupclasses" element={<GroupClasses />} />
         <Route path="profile" element={<Profile />} />
         <Route path="settings" element={<Settings />} />
+        <Route path='billing' element={<Billing />} />
       </Route>
     </Routes>
   );

@@ -6,7 +6,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 
-// Setup multer storage
+// --- MULTER SETUP ---
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
     const uploadDir = "uploads/profile_photos";
@@ -17,15 +17,19 @@ const storage = multer.diskStorage({
     cb(null, `user_${req.user.id}${path.extname(file.originalname)}`);
   },
 });
+
 const upload = multer({ storage });
 
+// --- UPDATE PROFILE ROUTE ---
 router.put("/", middlewareAuth, upload.single("profile_photo"), async (req, res) => {
   const userId = req.user.id;
   const { username, email, phone, full_name, goal } = req.body;
 
   let profilePhotoPath = null;
+
   if (req.file) {
-    profilePhotoPath = `/${req.file.path}`; // path disimpan di DB
+    // FIX: Convert Windows backslashes → forward slashes
+    profilePhotoPath = "/" + req.file.path.replace(/\\/g, "/");
   }
 
   try {
@@ -38,7 +42,7 @@ router.put("/", middlewareAuth, upload.single("profile_photo"), async (req, res)
           goal = $5
           ${profilePhotoPath ? `, profile_photo = $6` : ""}
       WHERE id = $7
-      RETURNING *
+      RETURNING id, username, email, full_name, phone, goal, profile_photo
     `;
 
     const params = profilePhotoPath
@@ -49,21 +53,26 @@ router.put("/", middlewareAuth, upload.single("profile_photo"), async (req, res)
 
     res.json({ success: true, user: result.rows[0] });
   } catch (err) {
-    console.error(err);
+    console.error("Edit profile error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });
 
+// --- GET PROFILE ROUTE ---
 router.get("/", middlewareAuth, async (req, res) => {
   const userId = req.user.id;
+
   try {
     const result = await pool.query(
-      "SELECT id, username, email, full_name, phone, goal, profile_photo FROM users WHERE id = $1",
+      `SELECT id, username, email, full_name, phone, goal, profile_photo 
+       FROM users 
+       WHERE id = $1`,
       [userId]
     );
+
     res.json({ user: result.rows[0] });
   } catch (err) {
-    console.error(err);
+    console.error("Get profile error:", err);
     res.status(500).json({ error: "Internal server error" });
   }
 });

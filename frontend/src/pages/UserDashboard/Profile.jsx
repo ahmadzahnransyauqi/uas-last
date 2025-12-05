@@ -53,7 +53,13 @@ export default function Profile() {
 
         setProfile(sanitizedUser);
         setEditedProfile(sanitizedUser);
-        setPhotoPreview(sanitizedUser.profile_photo);
+
+        // FIX: URL for preview
+        setPhotoPreview(
+          sanitizedUser.profile_photo
+            ? `http://localhost:3000${sanitizedUser.profile_photo}`
+            : null
+        );
       } catch (err) {
         console.error("Failed to load profile:", err);
       }
@@ -110,7 +116,14 @@ export default function Profile() {
 
       setProfile(sanitizedUpdated);
       setEditedProfile(sanitizedUpdated);
-      setPhotoPreview(sanitizedUpdated.profile_photo);
+
+      // FIX: URL for preview after saving
+      setPhotoPreview(
+        sanitizedUpdated.profile_photo
+          ? `http://localhost:3000${sanitizedUpdated.profile_photo}`
+          : null
+      );
+
       setPhotoFile(null);
       setIsEditing(false);
     } catch (err) {
@@ -120,7 +133,14 @@ export default function Profile() {
 
   const handleCancel = () => {
     setEditedProfile(profile);
-    setPhotoPreview(profile.profile_photo);
+
+    // FIX: restore correct image URL
+    setPhotoPreview(
+      profile.profile_photo
+        ? `http://localhost:3000${profile.profile_photo}`
+        : null
+    );
+
     setPhotoFile(null);
     setIsEditing(false);
   };
@@ -131,7 +151,9 @@ export default function Profile() {
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 style={{ color: "#ffffff" }}>Profile</h2>
-          <p style={{ color: "#9CA3AF" }}>View and edit your personal information</p>
+          <p style={{ color: "#9CA3AF" }}>
+            View and edit your personal information
+          </p>
         </div>
 
         {!isEditing && (
@@ -148,25 +170,46 @@ export default function Profile() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT PANEL */}
-        <div className="p-6 rounded-lg flex flex-col items-center" style={{ backgroundColor: "#252525" }}>
+        <div
+          className="p-6 rounded-lg flex flex-col items-center"
+          style={{ backgroundColor: "#252525" }}
+        >
           <div className="relative w-32 h-32 mb-4">
             {/* Profile Circle */}
-            <div className="w-32 h-32 rounded-full overflow-hidden flex items-center justify-center" style={{ backgroundColor: "#1a1a1a" }}>
+            <div
+              className="w-32 h-32 rounded-full overflow-hidden flex items-center justify-center"
+              style={{ backgroundColor: "#1a1a1a" }}
+            >
               {photoPreview ? (
-                <img src={photoPreview} alt="Profile" className="w-full h-full object-cover" />
+                <img
+                  src={photoPreview}
+                  alt="Profile"
+                  className="w-full h-full object-cover"
+                />
               ) : (
                 <UserCircle size={72} style={{ color: "#ff1f1f" }} />
               )}
             </div>
 
-            {/* Red Add Button */}
+            {/* Upload Button */}
             {isEditing && (
               <label
                 htmlFor="profilePhotoInput"
                 className="absolute bottom-0 right-0 w-10 h-10 bg-red-600 rounded-full flex items-center justify-center cursor-pointer border-2 border-gray-800 hover:opacity-90"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 text-white"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M12 4v16m8-8H4"
+                  />
                 </svg>
               </label>
             )}
@@ -181,7 +224,9 @@ export default function Profile() {
           </div>
 
           <h3 style={{ color: "#ffffff" }}>{profile.full_name}</h3>
-          <p className="mt-1" style={{ color: "#9CA3AF" }}>@{profile.username}</p>
+          <p className="mt-1" style={{ color: "#9CA3AF" }}>
+            @{profile.username}
+          </p>
 
           <button
             onClick={() => setShowQRCode(!showQRCode)}
@@ -193,7 +238,10 @@ export default function Profile() {
           </button>
 
           {showQRCode && (
-            <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: "#ffffff" }}>
+            <div
+              className="mt-4 p-4 rounded-lg"
+              style={{ backgroundColor: "#ffffff" }}
+            >
               <QRCodeSVG
                 value={JSON.stringify({
                   id: profile.id,
@@ -203,14 +251,24 @@ export default function Profile() {
                 size={180}
                 level="H"
               />
-              <p className="text-center mt-2" style={{ color: "#1a1a1a" }}>ID: {profile.id}</p>
+              <p
+                className="text-center mt-2"
+                style={{ color: "#1a1a1a" }}
+              >
+                ID: {profile.id}
+              </p>
             </div>
           )}
         </div>
 
         {/* RIGHT PANEL */}
-        <div className="lg:col-span-2 p-6 rounded-lg min-h-screen" style={{ backgroundColor: "#252525" }}>
-          <h3 className="mb-6" style={{ color: "#ffffff" }}>Personal Information</h3>
+        <div
+          className="lg:col-span-2 p-6 rounded-lg min-h-screen"
+          style={{ backgroundColor: "#252525" }}
+        >
+          <h3 className="mb-6" style={{ color: "#ffffff" }}>
+            Personal Information
+          </h3>
 
           <div className="space-y-4">
             {[
@@ -220,7 +278,10 @@ export default function Profile() {
               { label: "Phone", icon: Phone, key: "phone" },
             ].map(({ label, icon: Icon, key }) => (
               <div key={key}>
-                <label className="flex items-center gap-2 mb-2" style={{ color: "#9CA3AF" }}>
+                <label
+                  className="flex items-center gap-2 mb-2"
+                  style={{ color: "#9CA3AF" }}
+                >
                   <Icon size={18} />
                   {label}
                 </label>
@@ -230,9 +291,18 @@ export default function Profile() {
                     type="text"
                     placeholder={`Enter your ${label.toLowerCase()}`}
                     value={editedProfile[key] || ""}
-                    onChange={(e) => setEditedProfile({ ...editedProfile, [key]: e.target.value })}
+                    onChange={(e) =>
+                      setEditedProfile({
+                        ...editedProfile,
+                        [key]: e.target.value,
+                      })
+                    }
                     className="w-full px-4 py-2 rounded-lg"
-                    style={{ backgroundColor: "#1a1a1a", color: "#ffffff", border: "1px solid #252525" }}
+                    style={{
+                      backgroundColor: "#1a1a1a",
+                      color: "#ffffff",
+                      border: "1px solid #252525",
+                    }}
                   />
                 ) : (
                   <p style={{ color: "#ffffff" }}>{profile[key]}</p>
@@ -242,7 +312,10 @@ export default function Profile() {
 
             {/* Goals */}
             <div>
-              <label className="flex items-center gap-2 mb-2" style={{ color: "#9CA3AF" }}>
+              <label
+                className="flex items-center gap-2 mb-2"
+                style={{ color: "#9CA3AF" }}
+              >
                 <Calendar size={18} />
                 Fitness Goals
               </label>
@@ -250,10 +323,19 @@ export default function Profile() {
                 <textarea
                   placeholder="Describe your fitness goals"
                   value={editedProfile.goal || ""}
-                  onChange={(e) => setEditedProfile({ ...editedProfile, goal: e.target.value })}
+                  onChange={(e) =>
+                    setEditedProfile({
+                      ...editedProfile,
+                      goal: e.target.value,
+                    })
+                  }
                   className="w-full px-4 py-2 rounded-lg"
                   rows={3}
-                  style={{ backgroundColor: "#1a1a1a", color: "#ffffff", border: "1px solid #252525" }}
+                  style={{
+                    backgroundColor: "#1a1a1a",
+                    color: "#ffffff",
+                    border: "1px solid #252525",
+                  }}
                 />
               ) : (
                 <p style={{ color: "#ffffff" }}>{profile.goal}</p>

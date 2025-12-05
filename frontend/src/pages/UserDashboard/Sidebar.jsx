@@ -6,7 +6,9 @@ import {
   Settings,
   Home,
   LogOut,
+  Wallet,
 } from "lucide-react";
+
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hook/useAuth";
 import logoimg from "../../assets/logotext.png";
@@ -26,6 +28,7 @@ export default function Sidebar() {
     { id: "/user/groupclasses", label: "Group Classes", icon: Users },
     { id: "/user/profile", label: "Profile", icon: User },
     { id: "/user/settings", label: "Settings", icon: Settings },
+    { id: "/user/billing", label: "Billing", icon: Wallet },
   ];
 
   const handleLogout = () => {
