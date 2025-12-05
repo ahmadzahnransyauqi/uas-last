@@ -1,35 +1,27 @@
-import { useEffect, useState } from 'react'
-import './App.css'
-import LoginForm from './components/LoginForm'
+import React from "react";
+import { Routes, Route } from "react-router-dom";
+import Navbar from "./components/Navbar";
+import Footer from "./components/Footer";
+import Home from "./pages/Home";
+import Membership from "./pages/Membership";
+import Progress from "./pages/Progress";
+import Jadwal from "./pages/Jadwal";
+import Contact from "./pages/Contact";
 
-function App() {
-  const [data, setData] = useState(null)
-
-  useEffect(() => {
-    fetch("http://localhost:3000")
-      .then(res => res.json())
-      .then(data => {
-        console.log(data)
-        setData(data)
-      })
-      .catch(err => console.log(err))
-  }, [])
-
+export default function App() {
   return (
-    <div>
-      <h1 className="text-3xl font-bold underline">Hello world!</h1>
-      
-      {}
-      <h2>Data dari backend:</h2>
-      <pre>{JSON.stringify(data, null, 2)}</pre>
-      
-      <hr className="my-6" />
-
-      {}
-      <LoginForm /> 
-
+    <div className="min-h-screen">
+      <Navbar />
+      <main>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/membership" element={<Membership />} />
+          <Route path="/progress" element={<Progress />} />
+          <Route path="/jadwal" element={<Jadwal />} />
+          <Route path="/contact" element={<Contact />} />
+        </Routes>
+      </main>
+      <Footer />
     </div>
-  )
+  );
 }
-
-export default App
