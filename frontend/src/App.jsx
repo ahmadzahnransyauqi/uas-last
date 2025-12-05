@@ -1,66 +1,27 @@
-import { useEffect, useState } from 'react';
-import LoginForm from './components/login';
-import RegisterForm from './components/register'; // Pastikan nama import sesuai file Anda
-import Dashboard from './components/Dashboard';
-import LandingPage from './components/LandingPage';
+import { useEffect, useState } from "react";
+import Home from "./pages/Homepage/Homepage.jsx";
+import "./App.css";
+import Login from "./pages/Homepage/login.jsx";
+import Register from "./pages/Homepage/register.jsx";
+import TermsCondition from "./pages/Homepage/Term&Condition.jsx";
+import AboutUs from "./pages/Homepage/Aboutus.jsx";
+import { Route, Routes } from "react-router-dom";
+import Membership from "./pages/Homepage/membership.jsx";
+import Class from "./pages/Homepage/class.jsx";
+import ForgotPassword from "./pages/Homepage/forgotPassword.jsx";
 
 function App() {
-  const [user, setUser] = useState(null);
-  
-  // State navigasi: 'home' | 'login' | 'register'
-  const [currentView, setCurrentView] = useState('home'); 
-
-  useEffect(() => {
-    const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
-  }, []);
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
-    localStorage.removeItem("user");
-    setUser(null);
-    setCurrentView('home'); 
-  };
-
-  // --- LOGIKA TAMPILAN ---
-  
-  // 1. Jika User Sudah Login -> Dashboard
-  if (user) {
-    return <Dashboard user={user} onLogout={handleLogout} />;
-  }
-
-  // 2. Jika Belum Login -> Cek View
   return (
-    <div className="min-h-screen bg-gray-100 font-sans">
-        
-      {/* TAMPILAN HOME */}
-      {currentView === 'home' && (
-        <LandingPage onNavigate={setCurrentView} />
-      )}
-
-      {/* TAMPILAN LOGIN */}
-      {currentView === 'login' && (
-        <div className="flex items-center justify-center min-h-screen p-4">
-            <LoginForm 
-                onRegister={() => setCurrentView('register')} // Fungsi pindah ke Register
-                onBack={() => setCurrentView('home')}         // Fungsi kembali ke Home
-            />
-        </div>
-      )}
-
-      {/* TAMPILAN REGISTER */}
-      {currentView === 'register' && (
-        <div className="flex items-center justify-center min-h-screen p-4">
-            <RegisterForm 
-                onLogin={() => setCurrentView('login')}       // Fungsi pindah ke Login
-                onBack={() => setCurrentView('home')}         // Fungsi kembali ke Home
-            />
-        </div>
-      )}
-
-    </div>
+    <Routes>
+    <Route path="/" element={<Home />} />
+    <Route path="/login" element={<Login />} />
+    <Route path="/register" element={<Register />} />
+    <Route path="/aboutus" element={<AboutUs />} />
+    <Route path="/termscondition" element={<TermsCondition />} />
+    <Route path="/membership" element={<Membership />} />
+    <Route path="/class" element={<Class />} />
+    <Route path="/forgotpassword" element={<ForgotPassword />} />
+  </Routes>
   );
 }
 

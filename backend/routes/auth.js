@@ -33,29 +33,50 @@ router.post('/register', async (req, res) => {
 });
 
 // --- LOGIN ---
-// --- LOGIN ---
+// --- LOGIN DENGAN PENGECEKAN ROLE ---
 router.post('/login', async (req, res) => {
-    // 👇 TAMBAHKAN INI UNTUK DEBUGGING
-    console.log("LOGIN REQUEST:", req.body); 
-
-    const { username, password } = req.body;
+    // 1. Terima parameter 'role' dari frontend
+    const { username, password, role } = req.body; 
 
     try {
-        const userResult = await pool.query("SELECT * FROM users WHERE username = $1", [username]);
+        // 2. Query Database: Cari user yang username DAN role-nya cocok
+        // Kita pakai LOWER() agar tidak masalah huruf besar/kecil
+        const userResult = await pool.query(
+            "SELECT * FROM users WHERE LOWER(username) = LOWER($1) AND role = $2", 
+            [username, role]
+        );
+
+        // 3. Jika tidak ditemukan, berarti Username salah ATAU Role salah pilih
         if (userResult.rows.length === 0) {
-            return res.status(400).json({ error: "Username tidak ditemukan" });
+            return res.status(401).json({ 
+                error: `Akun tidak ditemukan di akses ${role === 'admin' ? 'Admin' : 'Member'}!` 
+            });
         }
 
         const user = userResult.rows[0];
 
+        // 4. Cek Password
         const validPassword = await bcrypt.compare(password, user.password);
         if (!validPassword) {
-            return res.status(400).json({ error: "Password salah!" });
+            return res.status(401).json({ error: "Password salah!" });
         }
 
-        const token = jwt.sign({ id: user.id, role: user.role }, "rahasia_negara", { expiresIn: "1h" });
+        // 5. Buat Token
+        const token = jwt.sign(
+            { id: user.id, role: user.role }, 
+            "rahasia_negara", 
+            { expiresIn: "1h" }
+        );
 
-        res.json({ token, user: { id: user.id, username: user.username, role: user.role } });
+        res.json({ 
+            message: "Login Berhasil",
+            token, 
+            user: { 
+                username: user.username, 
+                role: user.role 
+            } 
+        });
+
     } catch (err) {
         console.error(err.message);
         res.status(500).json({ error: "Server Error saat Login" });
