@@ -1,39 +1,52 @@
 const express = require('express');
 const cors = require('cors');
 
-const app = express();
-const port = process.env.PORT || 3000;
-
-app.use(cors({
-  origin: "http://localhost:5173", // Or your frontend URL (e.g., localhost:3000)
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // explicitly allow PATCH
-  allowedHeaders: ["Content-Type", "Authorization"] // explicitly allow Authorization
-}));
-
-// Middleware
-app.use(cors());
-app.use(express.json());
+// Routes
 const authRoutes = require('./routes/auth'); 
 const scanRoutes = require('./routes/scan');
 const editProfileRoutes = require('./routes/edit_profile');
+const qrRoutes = require('./routes/scan');
 
-// --- GUNAKAN ROUTES ---
-// Artinya: semua URL yang berawalan /api/auth akan diurus oleh authRoutes
+const adminStatsRoutes = require('./routes/admin/stats');
+const adminUsersRoutes = require('./routes/admin/users');
+const adminPlansRoutes = require('./routes/admin/plans');
+const adminClassesRoutes = require('./routes/admin/classes');
+const adminPromosRoutes = require('./routes/admin/promos');
+const resetDeleteRoutes = require('./routes/user/resetPass_and_deleteAcc');
+
+const app = express();
+const port = process.env.PORT || 3000;
+
+// CORS Middleware
+app.use(cors({
+  origin: "http://localhost:5173", // frontend URL
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+// JSON Middleware
+app.use(express.json());
+
+// Routes
+app.use("/api/qr", qrRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/scan', scanRoutes);
-app.use('/api/admin/stats', require('./routes/admin/stats'));
-app.use('/api/admin/users', require('./routes/admin/users'));
-app.use('/api/admin/plans', require('./routes/admin/plans'));
-app.use('/api/admin/classes', require('./routes/admin/classes'));
-app.use('/api/admin/promos', require('./routes/admin/promos'));
-app.use('/api/user/reset&delete', require('./routes/user/resetPass_and_deleteAcc'));
 app.use('/api/edit_profile', editProfileRoutes);
 
-// Route Cek Server
+app.use('/api/admin/stats', adminStatsRoutes);
+app.use('/api/admin/users', adminUsersRoutes);
+app.use('/api/admin/plans', adminPlansRoutes);
+app.use('/api/admin/classes', adminClassesRoutes);
+app.use('/api/admin/promos', adminPromosRoutes);
+
+app.use('/api/user/reset&delete', resetDeleteRoutes);
+
+// Test route
 app.get('/', (req, res) => {
   res.send("API Gym Aktif 😎🔥");
 });
 
+// Start server
 app.listen(port, () => {
   console.log(`🚀 Server berjalan di http://localhost:${port}`);
 });
