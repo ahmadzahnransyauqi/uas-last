@@ -1,217 +1,170 @@
-import { Flame, TrendingUp, Clock, Target, Award, Calendar, Dumbbell, Users } from 'lucide-react';
+import { useState, useEffect } from "react";
+import { Calendar, Users, CheckCircle2 } from "lucide-react";
+import axios from "axios";
 
-export function Dashboard() {
-  const userStats = {
-    name: 'John',
-    streak: 12,
-    workoutsThisWeek: 4,
-    workoutsGoal: 5,
-    caloriesBurned: 2340,
-    activeMinutes: 245,
-    upcomingClasses: 3,
-    personalTrainingSessions: 2
+export default function Dashboard() {
+  const [joinedClasses, setJoinedClasses] = useState([]);
+  const [loadingClasses, setLoadingClasses] = useState(true);
+
+  const user = JSON.parse(localStorage.getItem("user"));
+  const username = user?.username || "User";
+
+  const attendanceHistory = [
+    {
+      id: 1,
+      date: "Dec 5, 2025",
+      type: "Group Class",
+      activity: "HIIT Blast",
+      checkIn: "6:00 AM",
+    },
+    {
+      id: 2,
+      date: "Dec 4, 2025",
+      type: "Personal Training",
+      activity: "Strength Training",
+      checkIn: "5:00 PM",
+    },
+    {
+      id: 3,
+      date: "Dec 3, 2025",
+      type: "Group Class",
+      activity: "Yoga Flow",
+      checkIn: "8:00 AM",
+    },
+  ];
+
+  const token = localStorage.getItem("token");
+  const headers = { Authorization: `Bearer ${token}` };
+
+  // Fetch joined classes
+  const fetchJoinedClasses = async () => {
+    if (!token) return;
+    setLoadingClasses(true);
+
+    try {
+      const res = await axios.get(
+        "http://localhost:3000/api/admin/classes/joined-classes",
+        { headers }
+      );
+
+      setJoinedClasses(res.data || []);
+    } catch (err) {
+      console.error(
+        "Failed to fetch joined classes:",
+        err.response?.data || err
+      );
+      setJoinedClasses([]);
+    } finally {
+      setLoadingClasses(false);
+    }
   };
 
-  const recentActivity = [
-    { id: 1, type: 'Group Class', name: 'HIIT Blast', date: 'Today, 6:00 AM', duration: '60 min' },
-    { id: 2, type: 'Personal Training', name: 'with Sarah Johnson', date: 'Yesterday, 5:00 PM', duration: '45 min' },
-    { id: 3, type: 'Group Class', name: 'Yoga Flow', date: 'Dec 1, 8:00 AM', duration: '60 min' },
-    { id: 4, type: 'Body Assessment', name: 'Full Composition Analysis', date: 'Dec 1, 2:00 PM', duration: '45 min' }
-  ];
+  useEffect(() => {
+    fetchJoinedClasses();
+  }, [token]);
 
-  const quickStats = [
-    {
-      icon: Flame,
-      label: 'Day Streak',
-      value: userStats.streak,
-      unit: 'days',
-      color: '#ff1f1f',
-      bgColor: '#1a1a1a'
-    },
-    {
-      icon: Dumbbell,
-      label: 'Workouts This Week',
-      value: `${userStats.workoutsThisWeek}/${userStats.workoutsGoal}`,
-      unit: '',
-      color: '#10b981',
-      bgColor: '#1a1a1a'
-    },
-    {
-      icon: Target,
-      label: 'Calories Burned',
-      value: userStats.caloriesBurned,
-      unit: 'kcal',
-      color: '#3b82f6',
-      bgColor: '#1a1a1a'
-    },
-    {
-      icon: Clock,
-      label: 'Active Minutes',
-      value: userStats.activeMinutes,
-      unit: 'min',
-      color: '#f59e0b',
-      bgColor: '#1a1a1a'
-    }
-  ];
+  if (!token) return <p style={{ color: "#fff" }}>You are not logged in.</p>;
 
   return (
-    <div>
-      <div className="mb-8">
-        <h2 style={{ color: '#ffffff' }}>Welcome back, {userStats.name}! 👋</h2>
-        <p style={{ color: '#9CA3AF' }}>Here's your fitness summary for today</p>
-      </div>
+    <div
+      style={{
+        padding: "20px",
+        minHeight: "100vh",
+        backgroundColor: "#121212",
+      }}
+    >
+      {/* HEADER */}
+      <h2 className="text-white font-bold text-3xl mb-5">Welcome back, {username}! 👋</h2>
 
-      {/* Quick Stats Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        {quickStats.map((stat) => {
-          const Icon = stat.icon;
-          return (
-            <div
-              key={stat.label}
-              className="p-6 rounded-lg"
-              style={{ backgroundColor: '#252525' }}
-            >
-              <div
-                className="w-12 h-12 rounded-lg flex items-center justify-center mb-4"
-                style={{ backgroundColor: stat.bgColor }}
-              >
-                <Icon size={24} style={{ color: stat.color }} />
-              </div>
-              <p className="mb-1" style={{ color: '#9CA3AF' }}>{stat.label}</p>
-              <div className="flex items-baseline gap-2">
-                <h3 style={{ color: '#ffffff' }}>{stat.value}</h3>
-                {stat.unit && <span style={{ color: '#9CA3AF' }}>{stat.unit}</span>}
-              </div>
-            </div>
-          );
-        })}
-      </div>
+      {/* MY CLASSES */}
+      <div className="p-6 rounded-lg" style={{ backgroundColor: "#252525" }}>
+        <div className="flex items-center gap-2 mb-6">
+          <Users size={24} style={{ color: "#ff1f1f" }} />
+          <h3 style={{ color: "#ffffff" }}>My Classes</h3>
+        </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
-        {/* Workout Progress */}
-        <div className="p-6 rounded-lg" style={{ backgroundColor: '#252525' }}>
-          <div className="flex items-center justify-between mb-4">
-            <h3 style={{ color: '#ffffff' }}>Weekly Goal</h3>
-            <span style={{ color: '#ff1f1f' }}>
-              {Math.round((userStats.workoutsThisWeek / userStats.workoutsGoal) * 100)}%
-            </span>
-          </div>
-          <div className="w-full h-3 rounded-full mb-2" style={{ backgroundColor: '#1a1a1a' }}>
-            <div
-              className="h-3 rounded-full transition-all"
-              style={{
-                backgroundColor: '#ff1f1f',
-                width: `${(userStats.workoutsThisWeek / userStats.workoutsGoal) * 100}%`
-              }}
-            />
-          </div>
-          <p style={{ color: '#9CA3AF' }}>
-            {userStats.workoutsGoal - userStats.workoutsThisWeek} more workout{userStats.workoutsGoal - userStats.workoutsThisWeek !== 1 ? 's' : ''} to reach your goal
+        {loadingClasses ? (
+          <p style={{ color: "#9CA3AF" }}>Loading classes...</p>
+        ) : joinedClasses.length === 0 ? (
+          <p style={{ color: "#9CA3AF" }}>
+            You haven't joined any classes yet.
           </p>
-        </div>
+        ) : (
+          <div className="space-y-4">
+            {joinedClasses.map((cls) => {
+              const categoriesSafe = Array.isArray(cls.categories)
+                ? cls.categories
+                : cls.categories
+                ? [cls.categories]
+                : [];
 
-        {/* Upcoming Classes */}
-        <div className="p-6 rounded-lg" style={{ backgroundColor: '#252525' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Users size={20} style={{ color: '#ff1f1f' }} />
-            <h3 style={{ color: '#ffffff' }}>Upcoming Classes</h3>
-          </div>
-          <div className="flex items-baseline gap-2 mb-2">
-            <h2 style={{ color: '#ffffff' }}>{userStats.upcomingClasses}</h2>
-            <span style={{ color: '#9CA3AF' }}>scheduled</span>
-          </div>
-          <p style={{ color: '#9CA3AF' }}>This week</p>
-        </div>
+              return (
+                <div
+                  key={cls.class_schedule_id}
+                  className="p-6 rounded-lg"
+                  style={{ backgroundColor: "#1a1a1a" }}
+                >
+                  <div className="flex items-center justify-between mb-3">
+                    <h3 style={{ color: "#ffffff", fontSize: "1.2rem" }}>
+                      {cls.class_name}
+                    </h3>
+                    <CheckCircle2 size={20} style={{ color: "#10b981" }} />
+                  </div>
 
-        {/* Training Sessions */}
-        <div className="p-6 rounded-lg" style={{ backgroundColor: '#252525' }}>
-          <div className="flex items-center gap-2 mb-4">
-            <Dumbbell size={20} style={{ color: '#ff1f1f' }} />
-            <h3 style={{ color: '#ffffff' }}>Training Sessions</h3>
-          </div>
-          <div className="flex items-baseline gap-2 mb-2">
-            <h2 style={{ color: '#ffffff' }}>{userStats.personalTrainingSessions}</h2>
-            <span style={{ color: '#9CA3AF' }}>booked</span>
-          </div>
-          <p style={{ color: '#9CA3AF' }}>Next 7 days</p>
-        </div>
-      </div>
+                  <p style={{ color: "#9CA3AF" }}>
+                    Trainer: {cls.trainer_name} | Difficulty: {cls.difficulty}
+                  </p>
+                  <p style={{ color: "#9CA3AF" }}>
+                    Days: {cls.day_of_week} | Time: {cls.start_time} -{" "}
+                    {cls.end_time}
+                  </p>
 
-      {/* Achievements */}
-      <div className="p-6 rounded-lg mb-8" style={{ backgroundColor: '#252525' }}>
-        <div className="flex items-center gap-2 mb-6">
-          <Award size={24} style={{ color: '#ff1f1f' }} />
-          <h3 style={{ color: '#ffffff' }}>Recent Achievements</h3>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div className="p-4 rounded-lg flex items-center gap-4" style={{ backgroundColor: '#1a1a1a' }}>
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: '#252525' }}
-            >
-              <Flame size={24} style={{ color: '#ff1f1f' }} />
-            </div>
-            <div>
-              <p style={{ color: '#ffffff' }}>10 Day Streak</p>
-              <p style={{ color: '#9CA3AF' }}>Consistency Champion</p>
-            </div>
-          </div>
-          <div className="p-4 rounded-lg flex items-center gap-4" style={{ backgroundColor: '#1a1a1a' }}>
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: '#252525' }}
-            >
-              <Target size={24} style={{ color: '#10b981' }} />
-            </div>
-            <div>
-              <p style={{ color: '#ffffff' }}>Weekly Goal Met</p>
-              <p style={{ color: '#9CA3AF' }}>Last week</p>
-            </div>
-          </div>
-          <div className="p-4 rounded-lg flex items-center gap-4" style={{ backgroundColor: '#1a1a1a' }}>
-            <div
-              className="w-12 h-12 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: '#252525' }}
-            >
-              <TrendingUp size={24} style={{ color: '#3b82f6' }} />
-            </div>
-            <div>
-              <p style={{ color: '#ffffff' }}>5000 Calories Burned</p>
-              <p style={{ color: '#9CA3AF' }}>This month</p>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Activity */}
-      <div className="p-6 rounded-lg" style={{ backgroundColor: '#252525' }}>
-        <div className="flex items-center gap-2 mb-6">
-          <Calendar size={24} style={{ color: '#ff1f1f' }} />
-          <h3 style={{ color: '#ffffff' }}>Recent Activity</h3>
-        </div>
-        <div className="space-y-4">
-          {recentActivity.map((activity, index) => (
-            <div
-              key={activity.id}
-              className="p-4 rounded-lg flex items-center justify-between"
-              style={{ backgroundColor: '#1a1a1a' }}
-            >
-              <div>
-                <div className="flex items-center gap-3 mb-1">
-                  <span
-                    className="px-2 py-1 rounded text-xs"
-                    style={{
-                      backgroundColor: '#252525',
-                      color: '#ff1f1f'
-                    }}
-                  >
-                    {activity.type}
-                  </span>
-                  <p style={{ color: '#ffffff' }}>{activity.name}</p>
+                  <div className="flex flex-wrap gap-2 my-2">
+                    {categoriesSafe.map((cat, idx) => (
+                      <span
+                        key={idx}
+                        className="px-2 py-1 text-xs rounded-full"
+                        style={{ backgroundColor: "#ff1f1f", color: "#fff" }}
+                      >
+                        {cat}
+                      </span>
+                    ))}
+                  </div>
                 </div>
-                <p style={{ color: '#9CA3AF' }}>{activity.date}</p>
+              );
+            })}
+          </div>
+        )}
+      </div>
+
+      {/* ATTENDANCE */}
+      <div
+        className="p-6 rounded-lg mt-8"
+        style={{ backgroundColor: "#252525" }}
+      >
+        <div className="flex items-center gap-2 mb-6">
+          <Calendar size={24} style={{ color: "#ff1f1f" }} />
+          <h3 style={{ color: "#ffffff" }}>Attendance History</h3>
+        </div>
+
+        <div className="space-y-3">
+          {attendanceHistory.map((record) => (
+            <div
+              key={record.id}
+              className="p-4 rounded-lg flex justify-between"
+              style={{ backgroundColor: "#1a1a1a" }}
+            >
+              <div className="flex-1">
+                <span
+                  className="px-3 py-1 text-xs rounded"
+                  style={{ backgroundColor: "#252525", color: "#ff1f1f" }}
+                >
+                  {record.type}
+                </span>
+                <p style={{ color: "#ffffff" }}>{record.activity}</p>
+                <p style={{ color: "#9CA3AF" }}>{record.date}</p>
               </div>
-              <span style={{ color: '#9CA3AF' }}>{activity.duration}</span>
+              <p style={{ color: "#9CA3AF" }}>{record.checkIn}</p>
             </div>
           ))}
         </div>

@@ -4,6 +4,12 @@ const cors = require('cors');
 const app = express();
 const port = process.env.PORT || 3000;
 
+app.use(cors({
+  origin: "http://localhost:5173", // Or your frontend URL (e.g., localhost:3000)
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"], // explicitly allow PATCH
+  allowedHeaders: ["Content-Type", "Authorization"] // explicitly allow Authorization
+}));
+
 // Middleware
 app.use(cors());
 app.use(express.json());

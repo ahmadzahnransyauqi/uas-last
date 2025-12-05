@@ -21,7 +21,6 @@ export default function Sidebar() {
 
   const menuItems = [
     { id: "/user", label: "Dashboard", icon: Home },
-    { id: "/user/personaltraining", label: "Personal Training", icon: Users },
     { id: "/user/bodyassessment", label: "Body Assessment", icon: Activity },
     { id: "/user/nutritionguidance", label: "Nutrition Guidance", icon: Apple },
     { id: "/user/groupclasses", label: "Group Classes", icon: Users },

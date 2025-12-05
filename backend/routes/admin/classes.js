@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../../config/db");
+const middlewareAuth = require("../../middleware/authMiddleware");
 
 const logActivity = async (msg) => {
   try {
@@ -12,10 +13,15 @@ const logActivity = async (msg) => {
 
 // GET all classes
 router.get("/", async (req, res) => {
-  const { rows } = await pool.query(
-    "SELECT * FROM class_schedules ORDER BY id ASC"
-  );
-  res.json(rows);
+  try {
+    const { rows } = await pool.query(
+      "SELECT * FROM class_schedules ORDER BY id ASC"
+    );
+    res.json(rows);
+  } catch (err) {
+    console.error("GET /classes error:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // POST add a new class
@@ -33,7 +39,6 @@ router.post("/", async (req, res) => {
       categories,
     } = req.body;
 
-    // Ensure start_time and end_time have HH:MM:SS
     const formatTime = (t) => (t.length === 5 ? t + ":00" : t);
 
     await pool.query(
@@ -72,7 +77,6 @@ router.put("/:id", async (req, res) => {
     if (!rows[0]) return res.status(404).json({ error: "Class not found" });
 
     const existing = rows[0];
-
     const {
       class_name,
       trainer_name,
@@ -87,16 +91,16 @@ router.put("/:id", async (req, res) => {
 
     await pool.query(
       `UPDATE class_schedules
-   SET class_name=$1,
-       trainer_name=$2,
-       day_of_week=$3,
-       start_time=$4,
-       end_time=$5,
-       spots=$6,
-       total_spots=$7,
-       difficulty=$8,
-       categories=$9
-   WHERE id=$10`,
+       SET class_name=$1,
+           trainer_name=$2,
+           day_of_week=$3,
+           start_time=$4,
+           end_time=$5,
+           spots=$6,
+           total_spots=$7,
+           difficulty=$8,
+           categories=$9
+       WHERE id=$10`,
       [
         class_name ?? existing.class_name,
         trainer_name ?? existing.trainer_name,
@@ -121,28 +125,92 @@ router.put("/:id", async (req, res) => {
 
 // DELETE a class
 router.delete("/:id", async (req, res) => {
-  await pool.query("DELETE FROM class_schedules WHERE id=$1", [req.params.id]);
-  res.json({ msg: "Deleted" });
+  try {
+    await pool.query("DELETE FROM class_schedules WHERE id=$1", [
+      req.params.id,
+    ]);
+    res.json({ msg: "Deleted" });
+  } catch (err) {
+    console.error("DELETE /classes/:id error:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
-// PATCH /api/admin/classes/:id/join
-router.patch("/:id/join", async (req, res) => {
+router.get("/joined-classes", middlewareAuth, async (req, res) => {
   try {
+    const user_id = req.user.id;
+
     const { rows } = await pool.query(
-      "SELECT spots, total_spots FROM class_schedules WHERE id=$1",
-      [req.params.id]
+      `
+      SELECT 
+        us.id AS user_schedule_id,
+        cs.id AS class_id,
+        cs.class_name,
+        cs.trainer_name,
+
+        /* Prefer user_schedules values, otherwise use class_schedules */
+        COALESCE(us.day_of_week, cs.day_of_week) AS day_of_week,
+        COALESCE(us.start_time, cs.start_time) AS start_time,
+        COALESCE(us.end_time, cs.end_time) AS end_time,
+        COALESCE(us.difficulty, cs.difficulty) AS difficulty,
+        COALESCE(us.categories, cs.categories) AS categories
+
+      FROM user_schedules us
+      JOIN class_schedules cs 
+        ON us.class_schedule_id = cs.id
+      WHERE us.user_id = $1
+      ORDER BY us.created_at DESC
+      `,
+      [user_id]
     );
+
+    res.json(rows);
+  } catch (err) {
+    console.error("GET /joined-classes error:", err);
+    res.status(500).json({ error: err.message });
+  }
+});
+
+
+router.patch("/:id/join", middlewareAuth, async (req, res) => {
+  try {
+    const classId = req.params.id;
+    const user_id = req.user.id;
+
+    // Get full class schedule data
+    const { rows } = await pool.query(
+      "SELECT * FROM class_schedules WHERE id=$1",
+      [classId]
+    );
+
     if (!rows[0]) return res.status(404).json({ error: "Class not found" });
+    const cls = rows[0];
 
-    const { spots, total_spots } = rows[0];
-
-    if (spots >= total_spots)
+    // Check capacity
+    if (cls.spots >= cls.total_spots)
       return res.status(400).json({ error: "Class is full" });
 
-    // Increment spots by 1 (user joins)
+    // Increase spots
     await pool.query(
       "UPDATE class_schedules SET spots = spots + 1 WHERE id=$1",
-      [req.params.id]
+      [classId]
+    );
+
+    // Insert user schedule with full details
+    await pool.query(
+      `INSERT INTO user_schedules 
+        (user_id, class_schedule_id, day_of_week, start_time, end_time, difficulty, categories, created_at)
+       VALUES 
+        ($1, $2, $3, $4, $5, $6, $7, NOW())`,
+      [
+        user_id,
+        classId,
+        cls.day_of_week,
+        cls.start_time,
+        cls.end_time,
+        cls.difficulty,
+        cls.categories,
+      ]
     );
 
     res.json({ msg: "Joined successfully" });
@@ -152,30 +220,52 @@ router.patch("/:id/join", async (req, res) => {
   }
 });
 
-// PATCH /classes/:id/leave
-router.patch("/:id/leave", async (req, res) => {
+router.patch("/:id/leave", middlewareAuth, async (req, res) => {
   try {
-    const { id } = req.params;
+    const classId = req.params.id;
+    const user_id = req.user.id;
 
-    // Get current spots
+    // 1. Get class schedule
     const { rows } = await pool.query(
-      "SELECT spots FROM class_schedules WHERE id=$1",
-      [id]
+      "SELECT * FROM class_schedules WHERE id=$1",
+      [classId]
     );
-    if (!rows[0]) return res.status(404).json({ error: "Class not found" });
 
-    if (rows[0].spots <= 0) {
-      return res.status(400).json({ error: "No spots to leave" });
+    if (!rows[0]) return res.status(404).json({ error: "Class not found" });
+    const cls = rows[0];
+
+    // 2. Check if user is actually joined
+    const joined = await pool.query(
+      "SELECT * FROM user_schedules WHERE user_id=$1 AND class_schedule_id=$2",
+      [user_id, classId]
+    );
+
+    if (!joined.rows[0]) {
+      return res.status(400).json({ error: "You are not joined in this class" });
     }
 
+    // 3. Check if spots can be decremented
+    if (cls.spots <= 0) {
+      return res.status(400).json({ error: "Cannot leave, no spots to remove" });
+    }
+
+    // 4. Decrease spots
     await pool.query(
       "UPDATE class_schedules SET spots = spots - 1 WHERE id=$1",
-      [id]
+      [classId]
     );
-    res.json({ msg: "Left class" });
+
+    // 5. Remove from user schedule
+    await pool.query(
+      "DELETE FROM user_schedules WHERE user_id=$1 AND class_schedule_id=$2",
+      [user_id, classId]
+    );
+
+    res.json({ msg: "Left class successfully" });
+
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to leave class" });
+    console.error("PATCH /classes/:id/leave error:", err);
+    res.status(500).json({ error: err.message });
   }
 });
 

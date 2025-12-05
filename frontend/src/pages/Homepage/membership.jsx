@@ -1,9 +1,61 @@
 import Footer from "../../component/homepage/footer";
 import Header from "../../component/homepage/header";
 import MembershipLayout from "../../component/homepage/membership-layout";
+import { useRef, useState, useEffect } from "react";
+import axios from "axios";
 
 export default function Membership() {
-  // Define plan data outside of the return for cleaner rendering
+  const [promos, setPromos] = useState([]);
+  const [canScroll, setCanScroll] = useState(false);
+  const carouselRef = useRef(null);
+
+  // Fetch promos from backend
+  useEffect(() => {
+    axios
+      .get("/api/admin/promos")
+      .then((res) => {
+        console.log("Promos fetched:", res.data);
+        setPromos(res.data);
+      })
+      .catch((err) => console.error("Failed to fetch promos:", err));
+  }, []);
+
+  // Check if carousel can scroll
+  useEffect(() => {
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    const totalWidth = [...carousel.children[0].children].reduce(
+      (acc, card) => acc + card.offsetWidth + 16, // 16px gap
+      0
+    );
+
+    setCanScroll(totalWidth > carousel.offsetWidth);
+  }, [promos]);
+
+  // Carousel scroll logic
+  useEffect(() => {
+    if (!canScroll) return; // don't scroll if not needed
+
+    const carousel = carouselRef.current;
+    if (!carousel) return;
+
+    let scrollAmount = 0;
+    const speed = 2;
+
+    const scroll = () => {
+      if (carousel.scrollLeft >= carousel.scrollWidth / 2) {
+        scrollAmount = 0;
+      } else {
+        scrollAmount += speed;
+      }
+      carousel.scrollLeft = scrollAmount;
+      requestAnimationFrame(scroll);
+    };
+
+    scroll();
+  }, [promos, canScroll]);
+
   const weeklyPlans = [
     {
       name: "Basic",
@@ -42,7 +94,6 @@ export default function Membership() {
       ],
     },
   ];
-
   const monthlyPlans = [
     {
       name: "Basic",
@@ -80,7 +131,6 @@ export default function Membership() {
       ],
     },
   ];
-
   const yearlyPlans = [
     {
       name: "Basic",
@@ -120,7 +170,6 @@ export default function Membership() {
       ],
     },
   ];
-
   return (
     <>
       <Header />
@@ -128,21 +177,54 @@ export default function Membership() {
         Membership
       </h2>
 
+      {/* Promo Carousel */}
+      <div
+        ref={carouselRef}
+        className={`w-full overflow-hidden flex py-4 ${
+          !canScroll ? "justify-center" : "flex-nowrap"
+        }`}
+      >
+        <div
+          className="flex gap-4"
+          style={{ minWidth: canScroll ? "max-content" : "auto" }}
+        >
+          {[...(canScroll ? [...promos, ...promos] : promos)].map(
+            (promo, index) => (
+              <div
+                key={index}
+                className="min-w-[250px] p-4 rounded-lg text-white shrink-0"
+                style={{
+                  backgroundColor: "#555555",
+                  overflowWrap: "break-word",
+                }}
+              >
+                <h3 className="font-bold text-lg mb-1">{promo.title}</h3>
+                <p className="text-sm mb-1">{promo.description}</p>
+                <p className="text-xs">
+                  Discount: {promo.discount_percentage}%
+                </p>
+                <p className="text-xs">
+                  Expires:{" "}
+                  {promo.valid_until
+                    ? new Date(promo.valid_until).toLocaleDateString()
+                    : "N/A"}
+                </p>
+              </div>
+            )
+          )}
+        </div>
+      </div>
+
       {/* Weekly Plans */}
       <MembershipLayout title="Weekly Plans" plans={weeklyPlans} />
-
-      {/* Separator height increased for mobile and desktop consistency */}
       <div className="w-full h-16 md:h-20"></div>
 
       {/* Monthly Plans */}
       <MembershipLayout title="Monthly Plans" plans={monthlyPlans} />
-
-      {/* Separator height increased for mobile and desktop consistency */}
       <div className="w-full h-16 md:h-20"></div>
 
       {/* Yearly Plans */}
       <MembershipLayout title="Yearly Plans" plans={yearlyPlans} />
-
       <div className="w-full h-12"></div>
       <Footer />
     </>

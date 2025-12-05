@@ -1,4 +1,4 @@
-import { Dashboard } from "./pages/UserDashboard/Dashboard.jsx";
+import Dashboard from "./pages/UserDashboard/Dashboard.jsx";
 import Home from "./pages/Homepage/Homepage.jsx";
 import "./App.css";
 import Login from "./pages/Homepage/login.jsx";
@@ -46,7 +46,6 @@ export default function App() {
 
       <Route path="/user" element={<UserLayout />}>
         <Route index element={<Dashboard />} />
-        <Route path="personaltraining" element={<PersonalTraining />} />
         <Route path="bodyassessment" element={<BodyAssessment />} />
         <Route path="nutritionguidance" element={<NutritionGuidance />} />
         <Route path="groupclasses" element={<GroupClasses />} />

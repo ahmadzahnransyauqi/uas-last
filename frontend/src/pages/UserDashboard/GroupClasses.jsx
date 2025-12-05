@@ -11,17 +11,30 @@ export default function GroupClasses() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("All");
   const [selectedDifficulty, setSelectedDifficulty] = useState("All");
+
+  // Confirm modal for join/leave
   const [confirmModal, setConfirmModal] = useState({
     isOpen: false,
-    classAction: null, // "join" or "leave"
+    classAction: null,
     classData: null,
   });
 
-  // Fetch classes from backend
+  // Error modal
+  const [errorModal, setErrorModal] = useState({
+    isOpen: false,
+    message: "",
+  });
+
+  const token = localStorage.getItem("token");
+
+  // FETCH ALL CLASSES
   useEffect(() => {
     const fetchClasses = async () => {
       try {
-        const res = await axios.get("/api/admin/classes");
+        const res = await axios.get("http://localhost:3000/api/admin/classes", {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+
         const mapped = res.data.map((cls) => ({
           id: cls.id,
           name: cls.class_name,
@@ -33,64 +46,93 @@ export default function GroupClasses() {
           difficulty: cls.difficulty,
           category: cls.categories,
         }));
+
         setClasses(mapped);
       } catch (err) {
-        console.error("Failed to fetch classes:", err);
+        console.error(err);
       }
     };
-    fetchClasses();
-  }, []);
 
-  // Handle Confirm action (join or leave)
+    if (token) fetchClasses();
+  }, [token]);
+
+  // FETCH JOINED CLASSES
+  useEffect(() => {
+    const fetchJoined = async () => {
+      try {
+        const res = await axios.get(
+          "http://localhost:3000/api/admin/classes/joined-classes",
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        const joinedIds = res.data.map((c) => c.class_id);
+        setJoinedClasses(joinedIds);
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    if (token) fetchJoined();
+  }, [token]);
+
+  // CONFIRM ACTION HANDLER
   const handleConfirmAction = async () => {
     const { classAction, classData } = confirmModal;
-    if (!classData) return;
+    if (!classAction || !classData) return;
 
     try {
       if (classAction === "join") {
-        if (joinedClasses.includes(classData.id)) {
-          alert("You already joined this class!");
-          setConfirmModal({ isOpen: false, classAction: null, classData: null });
-          return;
-        }
-        await axios.patch(`/api/admin/classes/${classData.id}/join`);
-        setJoinedClasses([...joinedClasses, classData.id]);
-        setClasses(
-          classes.map((c) =>
+        const res = await axios.patch(
+          `http://localhost:3000/api/admin/classes/${classData.id}/join`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setJoinedClasses((prev) => [...prev, classData.id]);
+        setClasses((prev) =>
+          prev.map((c) =>
             c.id === classData.id ? { ...c, spots: c.spots + 1 } : c
           )
         );
-      } else if (classAction === "leave") {
-        await axios.patch(`/api/admin/classes/${classData.id}/leave`);
-        setJoinedClasses(joinedClasses.filter((id) => id !== classData.id));
-        setClasses(
-          classes.map((c) =>
+      } else {
+        await axios.patch(
+          `http://localhost:3000/api/admin/classes/${classData.id}/leave`,
+          {},
+          { headers: { Authorization: `Bearer ${token}` } }
+        );
+
+        setJoinedClasses((prev) => prev.filter((id) => id !== classData.id));
+        setClasses((prev) =>
+          prev.map((c) =>
             c.id === classData.id ? { ...c, spots: c.spots - 1 } : c
           )
         );
       }
-      setConfirmModal({ isOpen: false, classAction: null, classData: null });
     } catch (err) {
-      console.error("Action failed:", err);
-      alert(err.response?.data?.error || "Action failed");
-      setConfirmModal({ isOpen: false, classAction: null, classData: null });
+      const errorMessage = err.response?.data?.error || "Something went wrong.";
+
+      setErrorModal({
+        isOpen: true,
+        message: errorMessage,
+      });
     }
+
+    setConfirmModal({ isOpen: false, classAction: null, classData: null });
   };
 
-  const filterAndSearchClasses = () => {
-    return classes.filter((gymClass) => {
-      const matchesSearch =
-        gymClass.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        gymClass.instructor.toLowerCase().includes(searchTerm.toLowerCase());
-      const matchesCategory =
-        selectedCategory === "All" || gymClass.category === selectedCategory;
-      const matchesDifficulty =
-        selectedDifficulty === "All" || gymClass.difficulty === selectedDifficulty;
-      return matchesSearch && matchesCategory && matchesDifficulty;
-    });
-  };
+  const filteredClasses = classes.filter((cls) => {
+    const matchesSearch =
+      cls.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      cls.instructor.toLowerCase().includes(searchTerm.toLowerCase());
 
-  const filteredClasses = filterAndSearchClasses();
+    const matchesCategory =
+      selectedCategory === "All" || cls.category === selectedCategory;
+
+    const matchesDifficulty =
+      selectedDifficulty === "All" || cls.difficulty === selectedDifficulty;
+
+    return matchesSearch && matchesCategory && matchesDifficulty;
+  });
 
   const getCategoryColor = (category) => {
     switch (category) {
@@ -108,15 +150,22 @@ export default function GroupClasses() {
   };
 
   return (
-    <div style={{ padding: "20px", minHeight: "100vh", backgroundColor: "#121212" }}>
-      {/* Header */}
-      <div className="mb-6">
-        <h2 style={{ color: "#ffffff", fontSize: "2rem", marginBottom: "8px" }}>Group Classes</h2>
-        <p style={{ color: "#9CA3AF", fontSize: "1.1rem" }}>Find your perfect workout and join a community class.</p>
-      </div>
+    <div
+      style={{
+        padding: "20px",
+        backgroundColor: "#121212",
+        minHeight: "100vh",
+      }}
+    >
+      <h2 style={{ color: "white", fontSize: "2rem", marginBottom: 10 }}>
+        Group Classes
+      </h2>
 
-      {/* Search & Filter */}
-      <div className="mb-8 p-4 rounded-lg" style={{ backgroundColor: "#1e1e1e" }}>
+      {/* SEARCH + FILTERS */}
+      <div
+        className="mb-8 p-4 rounded-lg"
+        style={{ backgroundColor: "#1e1e1e" }}
+      >
         <div className="relative mb-4">
           <input
             type="text"
@@ -124,114 +173,201 @@ export default function GroupClasses() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
             className="w-full p-3 pl-10 rounded-lg"
-            style={{ backgroundColor: "#252525", color: "#ffffff", border: "none" }}
+            style={{
+              backgroundColor: "#252525",
+              color: "white",
+            }}
           />
-          <Search size={18} style={{ position: "absolute", left: "10px", top: "50%", transform: "translateY(-50%)", color: "#9CA3AF" }} />
+          <Search
+            size={18}
+            style={{
+              position: "absolute",
+              top: "50%",
+              left: 10,
+              transform: "translateY(-50%)",
+              color: "#9CA3AF",
+            }}
+          />
         </div>
 
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "#ffffff" }}>Category</label>
+            <label style={{ color: "white" }}>Category</label>
             <select
               value={selectedCategory}
               onChange={(e) => setSelectedCategory(e.target.value)}
-              className="w-full p-3 rounded-lg appearance-none"
-              style={{ backgroundColor: "#252525", color: "#ffffff", border: "1px solid #333333" }}
+              className="w-full p-3 rounded-lg"
+              style={{ backgroundColor: "#252525", color: "white" }}
             >
-              {categories.map((cat) => <option key={cat} value={cat}>{cat}</option>)}
+              {categories.map((cat) => (
+                <option key={cat}>{cat}</option>
+              ))}
             </select>
           </div>
+
           <div>
-            <label className="block text-sm font-medium mb-1" style={{ color: "#ffffff" }}>Difficulty</label>
+            <label style={{ color: "white" }}>Difficulty</label>
             <select
               value={selectedDifficulty}
               onChange={(e) => setSelectedDifficulty(e.target.value)}
-              className="w-full p-3 rounded-lg appearance-none"
-              style={{ backgroundColor: "#252525", color: "#ffffff", border: "1px solid #333333" }}
+              className="w-full p-3 rounded-lg"
+              style={{ backgroundColor: "#252525", color: "white" }}
             >
-              {difficulties.map((diff) => <option key={diff} value={diff}>{diff}</option>)}
+              {difficulties.map((d) => (
+                <option key={d}>{d}</option>
+              ))}
             </select>
           </div>
         </div>
       </div>
 
-      {/* Classes List */}
+      {/* CLASS CARDS */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-        {filteredClasses.length > 0 ? filteredClasses.map((gymClass) => {
-          const categoryColors = getCategoryColor(gymClass.category);
-          const joined = joinedClasses.includes(gymClass.id);
+        {filteredClasses.map((cls) => {
+          const joined = joinedClasses.includes(cls.id);
+          const color = getCategoryColor(cls.category);
+
           return (
-            <div key={gymClass.id} className="rounded-lg overflow-hidden flex flex-col shadow-lg transition-transform duration-300 hover:scale-[1.02]" style={{ backgroundColor: "#252525" }}>
-              <div className="p-4 flex flex-col flex-1">
-                <div className="flex items-start justify-between mb-2">
-                  <h3 style={{ color: "#ffffff", fontSize: "1.5rem", fontWeight: "bold" }}>{gymClass.name}</h3>
-                  <div className="flex flex-col items-end gap-1 ml-2">
-                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold" style={{ backgroundColor: "#1a1a1a", color: "#ff1f1f" }}>{gymClass.difficulty}</span>
-                    <span className="px-2 py-0.5 rounded-full text-xs font-semibold" style={{ backgroundColor: categoryColors.background, color: categoryColors.text }}>{gymClass.category}</span>
-                  </div>
+            <div
+              key={cls.id}
+              className="rounded-lg p-4 shadow-lg"
+              style={{ backgroundColor: "#252525" }}
+            >
+              <h3 style={{ color: "white", fontSize: "1.4rem" }}>{cls.name}</h3>
+              <p style={{ color: "#9CA3AF" }}>with {cls.instructor}</p>
+
+              <div
+                style={{ marginTop: 12, color: "#9CA3AF" }}
+                className="space-y-2"
+              >
+                <div className="flex gap-2">
+                  <Clock size={16} />
+                  {cls.time}
                 </div>
 
-                <p className="mb-3" style={{ color: "#9CA3AF" }}>with {gymClass.instructor}</p>
-
-                <div className="space-y-2 mb-4 flex-1" style={{ color: "#9CA3AF" }}>
-                  <div className="flex items-center gap-2">
-                    <Clock size={16} style={{ color: "#ff1f1f" }} />
-                    <span>{gymClass.time}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Calendar size={16} style={{ color: "#ff1f1f" }} />
-                    <span>{gymClass.day}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Users size={16} style={{ color: "#ff1f1f" }} />
-                    <span>{gymClass.spots} spots available of {gymClass.totalSpots}</span>
-                  </div>
+                <div className="flex gap-2">
+                  <Calendar size={16} />
+                  {cls.day}
                 </div>
 
-                <button
-                  onClick={() => setConfirmModal({ isOpen: true, classAction: joined ? "leave" : "join", classData: gymClass })}
-                  className="w-full py-3 rounded-lg font-bold text-lg transition-opacity hover:opacity-90"
-                  style={{
-                    backgroundColor: joined ? "#1a1a1a" : "#ff1f1f",
-                    color: "#ffffff",
-                    border: joined ? "1px solid #ff1f1f" : "none",
-                    cursor: gymClass.spots >= gymClass.totalSpots && !joined ? "not-allowed" : "pointer",
-                  }}
-                  disabled={gymClass.spots >= gymClass.totalSpots && !joined}
-                >
-                  {joined ? "Leave Class" : "Join Class"}
-                </button>
+                <div className="flex gap-2">
+                  <Users size={16} />
+                  {cls.spots} / {cls.totalSpots}
+                </div>
+
+                <div className="flex gap-2 mt-3">
+                  <span
+                    style={{
+                      padding: "4px 10px",
+                      borderRadius: "8px",
+                      backgroundColor: color.background,
+                      color: color.text,
+                      fontSize: "0.8rem",
+                    }}
+                  >
+                    {cls.category}
+                  </span>
+
+                  <span
+                    style={{
+                      padding: "4px 10px",
+                      borderRadius: "8px",
+                      backgroundColor: "#1e1e1e",
+                      color: "#9CA3AF",
+                      fontSize: "0.8rem",
+                      border: "1px solid #333",
+                    }}
+                  >
+                    {cls.difficulty}
+                  </span>
+                </div>
               </div>
+
+              <button
+                onClick={() =>
+                  setConfirmModal({
+                    isOpen: true,
+                    classAction: joined ? "leave" : "join",
+                    classData: cls,
+                  })
+                }
+                className="w-full mt-4 py-3 rounded-lg"
+                style={{
+                  backgroundColor: joined ? "#1a1a1a" : "#ff1f1f",
+                  color: "white",
+                  border: joined ? "1px solid #ff1f1f" : "none",
+                }}
+              >
+                {joined ? "Leave Class" : "Join Class"}
+              </button>
             </div>
           );
-        }) : (
-          <div className="md:col-span-3 text-center p-8 rounded-lg" style={{ backgroundColor: "#1e1e1e", color: "#9CA3AF" }}>
-            <p className="text-xl">No classes match your current search and filter criteria.</p>
-            <p className="mt-2">Try adjusting your filters or clearing the search term.</p>
-          </div>
-        )}
+        })}
       </div>
 
-      {/* Custom Confirmation Modal */}
+      {/* CONFIRMATION MODAL */}
       {confirmModal.isOpen && (
-        <div className="fixed inset-0 flex items-center justify-center bg-[#1a1a1a71] bg-opacity-60 z-50">
-          <div className="bg-[#252525] p-6 rounded-lg shadow-lg max-w-sm w-full" style={{ color: "#fff" }}>
-            <h3 className="text-xl font-bold mb-4">{confirmModal.classAction === "join" ? "Confirm Join" : "Confirm Leave"}</h3>
-            <p className="mb-6">
-              Do you want to {confirmModal.classAction} <strong>{confirmModal.classData?.name}</strong>?
+        <div className="fixed inset-0 bg-black/50 flex items-center justify-center">
+          <div className="bg-[#252525] p-6 rounded-lg text-white">
+            <h3 className="text-xl font-bold mb-4">
+              {confirmModal.classAction === "join"
+                ? "Join Class?"
+                : "Leave Class?"}
+            </h3>
+
+            <p>
+              Are you sure you want to{" "}
+              <strong>{confirmModal.classAction}</strong> this class?
             </p>
-            <div className="flex justify-end gap-3">
+
+            <div className="flex justify-end gap-3 mt-6">
               <button
-                onClick={() => setConfirmModal({ isOpen: false, classAction: null, classData: null })}
-                className="px-4 py-2 rounded-lg border border-gray-500 hover:bg-gray-700 transition"
+                onClick={() =>
+                  setConfirmModal({
+                    isOpen: false,
+                    classAction: null,
+                    classData: null,
+                  })
+                }
+                className="px-4 py-2 border rounded-lg"
               >
                 Cancel
               </button>
+
               <button
                 onClick={handleConfirmAction}
-                className="px-4 py-2 rounded-lg bg-red-600 hover:bg-red-700 transition"
+                className="px-4 py-2 bg-red-600 rounded-lg"
               >
                 Yes
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ERROR MODAL (for class full and other errors) */}
+      {errorModal.isOpen && (
+        <div className="fixed inset-0 bg-black/60 flex items-center justify-center z-50">
+          <div
+            className="p-6 rounded-xl text-white"
+            style={{
+              backgroundColor: "#252525",
+              width: "420px", // ← MUCH WIDER POPUP
+              maxWidth: "90%",
+            }}
+          >
+            <h3 className="text-2xl font-bold mb-3 text-white">Error</h3>
+
+            <p className="text-white text-lg leading-relaxed">
+              {errorModal.message}
+            </p>
+
+            <div className="flex justify-end mt-6">
+              <button
+                onClick={() => setErrorModal({ isOpen: false, message: "" })}
+                className="px-5 py-2 bg-red-600 hover:bg-red-700 rounded-lg text-white font-medium"
+              >
+                OK
               </button>
             </div>
           </div>

@@ -378,6 +378,24 @@ export default function Home() {
             },
           ]}
         />
+        <div className="mt-10 mb-16 flex justify-center">
+          <Link
+            to="/membership"
+            className="
+              hover:bg-[#ff6161] 
+              text-lg md:text-[20px] 
+              font-bold 
+              text-white 
+              w-max 
+              bg-[#ff1f1f] 
+              px-6 py-3 
+              rounded-lg
+              transition-colors duration-300
+            "
+          >
+            View More Plans
+          </Link>
+        </div>
       </div>
 
       {/* 7. Testimonial Section */}

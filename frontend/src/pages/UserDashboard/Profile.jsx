@@ -15,31 +15,45 @@ export default function Profile() {
   const [isEditing, setIsEditing] = useState(false);
   const [showQRCode, setShowQRCode] = useState(false);
 
-  const [profile, setProfile] = useState({
+  const emptyProfile = {
+    id: "",
     username: "",
     full_name: "",
     email: "",
     phone: "",
     goal: "",
-    id: "", // backend returns "id"
-  });
+    profile_photo: null,
+  };
 
-  const [editedProfile, setEditedProfile] = useState(profile);
+  const [profile, setProfile] = useState(emptyProfile);
+  const [editedProfile, setEditedProfile] = useState(emptyProfile);
+  const [photoFile, setPhotoFile] = useState(null);
+  const [photoPreview, setPhotoPreview] = useState(null);
 
-  // 🔥 Fetch user profile from backend
+  // Fetch user profile
   useEffect(() => {
     const fetchProfile = async () => {
       try {
         const token = localStorage.getItem("token");
-
         const res = await axios.get("http://localhost:3000/api/edit_profile", {
           headers: { Authorization: `Bearer ${token}` },
         });
 
         const user = res.data.user;
 
-        setProfile(user);
-        setEditedProfile(user);
+        const sanitizedUser = {
+          id: user.id || "",
+          username: user.username || "",
+          full_name: user.full_name || "",
+          email: user.email || "",
+          phone: user.phone || "",
+          goal: user.goal || "",
+          profile_photo: user.profile_photo || null,
+        };
+
+        setProfile(sanitizedUser);
+        setEditedProfile(sanitizedUser);
+        setPhotoPreview(sanitizedUser.profile_photo);
       } catch (err) {
         console.error("Failed to load profile:", err);
       }
@@ -48,23 +62,56 @@ export default function Profile() {
     fetchProfile();
   }, []);
 
-  // 💾 Save edits
+  // Handle photo change
+  const handlePhotoChange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setPhotoFile(file);
+    setPhotoPreview(URL.createObjectURL(file));
+  };
+
+  // Save profile changes
   const handleSave = async () => {
     try {
       const token = localStorage.getItem("token");
+      const formData = new FormData();
+
+      // Ensure no null values are sent
+      Object.keys(editedProfile).forEach((key) => {
+        let value = editedProfile[key];
+        if (value === null || value === undefined) value = "";
+        formData.append(key, value);
+      });
+
+      if (photoFile) formData.append("profile_photo", photoFile);
 
       const res = await axios.put(
         "http://localhost:3000/api/edit_profile",
-        editedProfile,
+        formData,
         {
-          headers: { Authorization: `Bearer ${token}` },
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "multipart/form-data",
+          },
         }
       );
 
       const updated = res.data.user;
 
-      setProfile(updated);
-      setEditedProfile(updated);
+      const sanitizedUpdated = {
+        id: updated.id || "",
+        username: updated.username || "",
+        full_name: updated.full_name || "",
+        email: updated.email || "",
+        phone: updated.phone || "",
+        goal: updated.goal || "",
+        profile_photo: updated.profile_photo || null,
+      };
+
+      setProfile(sanitizedUpdated);
+      setEditedProfile(sanitizedUpdated);
+      setPhotoPreview(sanitizedUpdated.profile_photo);
+      setPhotoFile(null);
       setIsEditing(false);
     } catch (err) {
       console.error("Failed to update profile:", err);
@@ -73,17 +120,18 @@ export default function Profile() {
 
   const handleCancel = () => {
     setEditedProfile(profile);
+    setPhotoPreview(profile.profile_photo);
+    setPhotoFile(null);
     setIsEditing(false);
   };
 
   return (
     <div>
+      {/* Header */}
       <div className="mb-6 flex items-center justify-between">
         <div>
           <h2 style={{ color: "#ffffff" }}>Profile</h2>
-          <p style={{ color: "#9CA3AF" }}>
-            View and edit your personal information
-          </p>
+          <p style={{ color: "#9CA3AF" }}>View and edit your personal information</p>
         </div>
 
         {!isEditing && (
@@ -100,21 +148,40 @@ export default function Profile() {
 
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
         {/* LEFT PANEL */}
-        <div
-          className="p-6 rounded-lg flex flex-col items-center"
-          style={{ backgroundColor: "#252525" }}
-        >
-          <div
-            className="w-32 h-32 rounded-full flex items-center justify-center mb-4"
-            style={{ backgroundColor: "#1a1a1a" }}
-          >
-            <UserCircle size={72} style={{ color: "#ff1f1f" }} />
+        <div className="p-6 rounded-lg flex flex-col items-center" style={{ backgroundColor: "#252525" }}>
+          <div className="relative w-32 h-32 mb-4">
+            {/* Profile Circle */}
+            <div className="w-32 h-32 rounded-full overflow-hidden flex items-center justify-center" style={{ backgroundColor: "#1a1a1a" }}>
+              {photoPreview ? (
+                <img src={photoPreview} alt="Profile" className="w-full h-full object-cover" />
+              ) : (
+                <UserCircle size={72} style={{ color: "#ff1f1f" }} />
+              )}
+            </div>
+
+            {/* Red Add Button */}
+            {isEditing && (
+              <label
+                htmlFor="profilePhotoInput"
+                className="absolute bottom-0 right-0 w-10 h-10 bg-red-600 rounded-full flex items-center justify-center cursor-pointer border-2 border-gray-800 hover:opacity-90"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4v16m8-8H4" />
+                </svg>
+              </label>
+            )}
+
+            <input
+              id="profilePhotoInput"
+              type="file"
+              accept="image/*"
+              onChange={handlePhotoChange}
+              className="hidden"
+            />
           </div>
 
           <h3 style={{ color: "#ffffff" }}>{profile.full_name}</h3>
-          <p className="mt-1" style={{ color: "#9CA3AF" }}>
-            @{profile.username}
-          </p>
+          <p className="mt-1" style={{ color: "#9CA3AF" }}>@{profile.username}</p>
 
           <button
             onClick={() => setShowQRCode(!showQRCode)}
@@ -126,10 +193,7 @@ export default function Profile() {
           </button>
 
           {showQRCode && (
-            <div
-              className="mt-4 p-4 rounded-lg"
-              style={{ backgroundColor: "#ffffff" }}
-            >
+            <div className="mt-4 p-4 rounded-lg" style={{ backgroundColor: "#ffffff" }}>
               <QRCodeSVG
                 value={JSON.stringify({
                   id: profile.id,
@@ -139,35 +203,24 @@ export default function Profile() {
                 size={180}
                 level="H"
               />
-              <p className="text-center mt-2" style={{ color: "#1a1a1a" }}>
-                ID: {profile.id}
-              </p>
+              <p className="text-center mt-2" style={{ color: "#1a1a1a" }}>ID: {profile.id}</p>
             </div>
           )}
         </div>
 
         {/* RIGHT PANEL */}
-        <div
-          className="lg:col-span-2 p-6 rounded-lg min-h-screen"
-          style={{ backgroundColor: "#252525" }}
-        >
-          <h3 className="mb-6" style={{ color: "#ffffff" }}>
-            Personal Information
-          </h3>
+        <div className="lg:col-span-2 p-6 rounded-lg min-h-screen" style={{ backgroundColor: "#252525" }}>
+          <h3 className="mb-6" style={{ color: "#ffffff" }}>Personal Information</h3>
 
           <div className="space-y-4">
-            {/* Reusable input fields */}
-            {[ 
+            {[
               { label: "Username", icon: User, key: "username" },
               { label: "Full Name", icon: User, key: "full_name" },
               { label: "Email", icon: Mail, key: "email" },
               { label: "Phone", icon: Phone, key: "phone" },
             ].map(({ label, icon: Icon, key }) => (
               <div key={key}>
-                <label
-                  className="flex items-center gap-2 mb-2"
-                  style={{ color: "#9CA3AF" }}
-                >
+                <label className="flex items-center gap-2 mb-2" style={{ color: "#9CA3AF" }}>
                   <Icon size={18} />
                   {label}
                 </label>
@@ -177,18 +230,9 @@ export default function Profile() {
                     type="text"
                     placeholder={`Enter your ${label.toLowerCase()}`}
                     value={editedProfile[key] || ""}
-                    onChange={(e) =>
-                      setEditedProfile({
-                        ...editedProfile,
-                        [key]: e.target.value,
-                      })
-                    }
+                    onChange={(e) => setEditedProfile({ ...editedProfile, [key]: e.target.value })}
                     className="w-full px-4 py-2 rounded-lg"
-                    style={{
-                      backgroundColor: "#1a1a1a",
-                      color: "#ffffff",
-                      border: "1px solid #252525",
-                    }}
+                    style={{ backgroundColor: "#1a1a1a", color: "#ffffff", border: "1px solid #252525" }}
                   />
                 ) : (
                   <p style={{ color: "#ffffff" }}>{profile[key]}</p>
@@ -196,37 +240,27 @@ export default function Profile() {
               </div>
             ))}
 
-            {/* GOALS */}
+            {/* Goals */}
             <div>
-              <label
-                className="flex items-center gap-2 mb-2"
-                style={{ color: "#9CA3AF" }}
-              >
+              <label className="flex items-center gap-2 mb-2" style={{ color: "#9CA3AF" }}>
                 <Calendar size={18} />
                 Fitness Goals
               </label>
-
               {isEditing ? (
                 <textarea
                   placeholder="Describe your fitness goals"
                   value={editedProfile.goal || ""}
-                  onChange={(e) =>
-                    setEditedProfile({ ...editedProfile, goal: e.target.value })
-                  }
+                  onChange={(e) => setEditedProfile({ ...editedProfile, goal: e.target.value })}
                   className="w-full px-4 py-2 rounded-lg"
                   rows={3}
-                  style={{
-                    backgroundColor: "#1a1a1a",
-                    color: "#ffffff",
-                    border: "1px solid #252525",
-                  }}
+                  style={{ backgroundColor: "#1a1a1a", color: "#ffffff", border: "1px solid #252525" }}
                 />
               ) : (
                 <p style={{ color: "#ffffff" }}>{profile.goal}</p>
               )}
             </div>
 
-            {/* SAVE / CANCEL */}
+            {/* Save / Cancel */}
             {isEditing && (
               <div className="flex gap-4 pt-4">
                 <button
