@@ -20,27 +20,45 @@ router.get("/", async (req, res) => {
 
 // POST add a new class
 router.post("/", async (req, res) => {
-  const {
-    name,
-    trainer,
-    day,
-    start,
-    end,
-    spots,
-    total_spots,
-    difficulty,
-    categories,
-  } = req.body;
+  try {
+    const {
+      class_name,
+      trainer_name,
+      day_of_week,
+      start_time,
+      end_time,
+      spots,
+      total_spots,
+      difficulty,
+      categories,
+    } = req.body;
 
-  await pool.query(
-    `INSERT INTO class_schedules 
-      (class_name, trainer_name, day_of_week, start_time, end_time, spots, total_spots, difficulty, categories) 
-     VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
-    [name, trainer, day, start, end, spots, total_spots, difficulty, categories]
-  );
+    // Ensure start_time and end_time have HH:MM:SS
+    const formatTime = (t) => (t.length === 5 ? t + ":00" : t);
 
-  logActivity(`Added Class: ${name}`);
-  res.json({ msg: "Added" });
+    await pool.query(
+      `INSERT INTO class_schedules 
+       (class_name, trainer_name, day_of_week, start_time, end_time, spots, total_spots, difficulty, categories) 
+       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)`,
+      [
+        class_name,
+        trainer_name,
+        day_of_week,
+        formatTime(start_time),
+        formatTime(end_time),
+        spots,
+        total_spots,
+        difficulty,
+        categories,
+      ]
+    );
+
+    logActivity(`Added Class: ${class_name}`);
+    res.json({ msg: "Added" });
+  } catch (err) {
+    console.error("POST /classes error:", err);
+    res.status(500).json({ error: err.message });
+  }
 });
 
 // PUT update a class

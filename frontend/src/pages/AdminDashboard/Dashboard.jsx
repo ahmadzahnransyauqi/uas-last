@@ -838,7 +838,11 @@ const ManageClasses = () => {
                 type="number"
                 val={form.spots}
                 onChange={(e) =>
-                  setForm({ ...form, spots: parseInt(e.target.value) || 0 })
+                  setForm({
+                    ...form,
+                    spots:
+                      e.target.value === "" ? "" : parseInt(e.target.value),
+                  })
                 }
               />
               <Input

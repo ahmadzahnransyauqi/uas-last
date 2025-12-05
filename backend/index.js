@@ -20,6 +20,7 @@ app.use('/api/admin/users', require('./routes/admin/users'));
 app.use('/api/admin/plans', require('./routes/admin/plans'));
 app.use('/api/admin/classes', require('./routes/admin/classes'));
 app.use('/api/admin/promos', require('./routes/admin/promos'));
+app.use('/api/user/reset&delete', require('./routes/user/resetPass_and_deleteAcc'));
 app.use('/api/edit_profile', editProfileRoutes);
 
 // Route Cek Server

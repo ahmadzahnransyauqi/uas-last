@@ -26,6 +26,7 @@ export default function Sidebar() {
     { id: "/user/nutritionguidance", label: "Nutrition Guidance", icon: Apple },
     { id: "/user/groupclasses", label: "Group Classes", icon: Users },
     { id: "/user/profile", label: "Profile", icon: User },
+    { id: "/user/settings", label: "Settings", icon: Settings },
   ];
 
   const handleLogout = () => {

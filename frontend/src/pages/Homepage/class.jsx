@@ -14,7 +14,10 @@ import Loading from "../../component/homepage/loading";
 
 export default function Class() {
   const [classList, setClassList] = useState([]);
+  const [filteredClasses, setFilteredClasses] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   // Fetch classes from backend
   useEffect(() => {
@@ -27,6 +30,7 @@ export default function Class() {
           intensity: cls.difficulty,
         }));
         setClassList(mapped);
+        setFilteredClasses(mapped);
       } catch (err) {
         console.error("Failed to fetch classes:", err);
       } finally {
@@ -42,6 +46,23 @@ export default function Class() {
     { name: "Strength", icon: StrengthIcon, image: StrengthClass, color: "#4EFF69" },
     { name: "Mind & Body", icon: MindBodyIcon, image: MindBodyClass, color: "#FFF04E" },
   ];
+
+  // Filter classes by search & category
+  useEffect(() => {
+    let filtered = [...classList];
+
+    if (selectedCategory) {
+      filtered = filtered.filter((cls) => cls.type === selectedCategory);
+    }
+
+    if (searchQuery) {
+      filtered = filtered.filter((cls) =>
+        cls.name.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+
+    setFilteredClasses(filtered);
+  }, [searchQuery, selectedCategory, classList]);
 
   if (loading) return <Loading />;
 
@@ -72,14 +93,19 @@ export default function Class() {
           {categoryData.map((cat) => (
             <div
               key={cat.name}
-              className="relative rounded-lg overflow-hidden h-40 md:h-56 flex items-end p-3"
+              className={`relative rounded-lg overflow-hidden h-40 md:h-56 flex items-end p-3 cursor-pointer transition-transform duration-200 ${
+                selectedCategory === cat.name ? "scale-105 border-2 border-white" : ""
+              }`}
               style={{
                 backgroundImage: `url(${cat.image})`,
                 backgroundSize: "cover",
                 backgroundPosition: "center",
               }}
+              onClick={() =>
+                setSelectedCategory(selectedCategory === cat.name ? "" : cat.name)
+              }
             >
-              {/* Gradient overlay for readability */}
+              {/* Gradient overlay */}
               <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent"></div>
               <p
                 className="relative font-bold text-xl md:text-2xl z-10"
@@ -95,6 +121,17 @@ export default function Class() {
             </div>
           ))}
         </div>
+
+        {/* Search Bar */}
+        <div className="mt-6 fle justify-center">
+          <input
+            type="text"
+            placeholder="Search classes..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full md:w-1/2 px-4 py-2 rounded-lg focus:outline-none flex justify-self-center bg-white text-black"
+          />
+        </div>
       </div>
 
       {/* Explore All Classes */}
@@ -103,7 +140,7 @@ export default function Class() {
           Explore All Classes
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-          {classList.map((cls, index) => {
+          {filteredClasses.map((cls, index) => {
             const categoryInfo = categoryData.find((c) => c.name === cls.type) || {};
             return (
               <div
