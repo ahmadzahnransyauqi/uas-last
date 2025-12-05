@@ -46,7 +46,7 @@ export default function Login() {
 
       setLoading(false);
 
-      if (data.user?.role === "admin") navigate("/admin/dashboard");
+      if (data.user?.role === "admin") navigate("/admin");
       else if (data.user?.role === "member") navigate("/user");
       else navigate("/");
     } catch (err) {

@@ -1,7 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const pool = require("../config/db");
-const middlewareAuth = require("../middleware/authMiddleWare");
+const middlewareAuth = require("../middleware/authMiddleware");
 
 // ========================
 // UPDATE PROFILE
