@@ -172,7 +172,6 @@ app.delete('/api/admin/promos/:id', async (req, res) => {
   res.json({ msg: "Deleted" });
 });
 
-// Start server
 app.listen(port, () => {
   console.log(`Server running on http://localhost:${port}`);
 });
