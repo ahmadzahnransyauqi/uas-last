@@ -20,34 +20,30 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage });
 
-// --- UPDATE PROFILE ROUTE ---
 router.put("/", middlewareAuth, upload.single("profile_photo"), async (req, res) => {
   const userId = req.user.id;
   const { username, email, phone, full_name, goal } = req.body;
 
-  let profilePhotoPath = null;
-
-  if (req.file) {
-    // FIX: Convert Windows backslashes → forward slashes
-    profilePhotoPath = "/" + req.file.path.replace(/\\/g, "/");
-  }
+  let profilePhotoPath = req.file ? "/" + req.file.path.replace(/\\/g, "/") : null;
 
   try {
-    const query = `
+    let query = `
       UPDATE users
       SET username = $1,
           email = $2,
           full_name = $3,
           phone = $4,
           goal = $5
-          ${profilePhotoPath ? `, profile_photo = $6` : ""}
-      WHERE id = $7
-      RETURNING id, username, email, full_name, phone, goal, profile_photo
     `;
+    const params = [username, email, full_name, phone, goal];
 
-    const params = profilePhotoPath
-      ? [username, email, full_name, phone, goal, profilePhotoPath, userId]
-      : [username, email, full_name, phone, goal, userId];
+    if (profilePhotoPath) {
+      query += `, profile_photo = $6 WHERE id = $7 RETURNING *`;
+      params.push(profilePhotoPath, userId);
+    } else {
+      query += ` WHERE id = $6 RETURNING *`;
+      params.push(userId);
+    }
 
     const result = await pool.query(query, params);
 

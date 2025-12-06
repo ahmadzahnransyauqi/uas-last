@@ -32,6 +32,9 @@ app.use('/api/edit_profile', editProfileRoutes);
 app.use("/api/memberships", require("./routes/membership_buy"));
 app.use("/api/auth", require("./routes/check-email"));
 app.use("/api/user", require("./routes/resetpassword"));
+app.use("/api/qr", require("./routes/scan"));
+app.use("/api/attendance", require("./routes/user/attendance"));
+app.use("/api/logout", require("./routes/logout"));
 
 // Route Cek Server
 app.get('/', (req, res) => {

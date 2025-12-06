@@ -18,9 +18,11 @@ import {
   FaChalkboardTeacher,
   FaMoneyBillWave,
   FaListAlt,
+  FaQrcode, // Added for Scan QR tab
 } from "react-icons/fa";
+import { useZxing } from "react-zxing"; // Added for QR scanning
 import logoImg from "../../assets/logotext.png";
-
+import { useAuth } from "../../hook/useAuth";
 const API_URL = "http://localhost:3000/api/admin";
 
 // --- COLORS ---
@@ -33,11 +35,11 @@ const C = {
   textMuted: "#9CA3AF",
 };
 
-
 const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const navigate = useNavigate();
   const [logoutModal, setLogoutModal] = useState(false);
+  const { logout } = useAuth(); // make sure you have access to the hook
 
   return (
     <div
@@ -89,6 +91,12 @@ const AdminDashboard = () => {
             active={activeTab === "classes"}
             onClick={() => setActiveTab("classes")}
           />
+          <NavBtn
+            icon={<FaQrcode />}
+            label="Scan QR Code"
+            active={activeTab === "scan-qr"}
+            onClick={() => setActiveTab("scan-qr")}
+          />
         </nav>
 
         <div className="p-5 border-t border-[#333]">
@@ -123,6 +131,7 @@ const AdminDashboard = () => {
           {activeTab === "promos" && <ManagePromos />}
           {activeTab === "membership" && <ManagePlans />}
           {activeTab === "classes" && <ManageClasses />}
+          {activeTab === "scan-qr" && <ScanQR />}
         </div>
       </main>
 
@@ -135,19 +144,14 @@ const AdminDashboard = () => {
         <p className="text-gray-300 mb-6">Are you sure you want to logout?</p>
         <div className="flex gap-4">
           <button
-            onClick={() => {
-              setLogoutModal(false);
-              navigate("/");
+            onClick={async () => {
+              await logout(); // revoke token + clear local storage
+              setLogoutModal(false); // close modal
+              navigate("/"); // redirect to homepage or login
             }}
             className="flex-1 bg-[#ff1f1f] hover:bg-[#ff6161] text-white py-3 rounded-lg font-bold transition"
           >
             Yes
-          </button>
-          <button
-            onClick={() => setLogoutModal(false)}
-            className="flex-1 bg-[#333] hover:bg-[#444] text-white py-3 rounded-lg font-bold transition"
-          >
-            No
           </button>
         </div>
       </Modal>
@@ -486,7 +490,9 @@ const ManageUsers = () => {
         onClose={() => setPasswordAlert(false)}
         title="Alert"
       >
-        <p className="text-gray-300 mb-6">Password must be at least 6 characters!</p>
+        <p className="text-gray-300 mb-6">
+          Password must be at least 6 characters!
+        </p>
         <button
           onClick={() => setPasswordAlert(false)}
           className="w-full bg-[#ff1f1f] hover:bg-[#ff6161] text-white py-3 rounded-lg font-bold transition"
@@ -568,7 +574,7 @@ const ManagePromos = () => {
     });
     setModal(true);
   };
-    const submit = async (e) => {
+  const submit = async (e) => {
     e.preventDefault();
     editData
       ? await axios.put(`${API_URL}/promos/${editData.id}`, form)
@@ -1105,6 +1111,134 @@ const ManageClasses = () => {
           </button>
         </div>
       </Modal>
+    </div>
+  );
+};
+
+const ScanQR = () => {
+  const [result, setResult] = useState("");
+  const [serverResponse, setServerResponse] = useState(null);
+  const [error, setError] = useState(null);
+  const [availableCameras, setAvailableCameras] = useState([]);
+  const [cameraId, setCameraId] = useState(null);
+
+  // Check available cameras on mount
+  useEffect(() => {
+    const checkCameras = async () => {
+      try {
+        const devices = await navigator.mediaDevices.enumerateDevices();
+        const videoDevices = devices.filter(
+          (device) => device.kind === "videoinput"
+        );
+        setAvailableCameras(videoDevices);
+        if (videoDevices.length > 0) setCameraId(videoDevices[0].deviceId);
+        console.log("Available cameras:", videoDevices);
+      } catch (err) {
+        console.error("Error enumerating devices:", err);
+        setError("Cannot access camera devices.");
+      }
+    };
+    checkCameras();
+  }, []);
+
+  // Setup ZXing scanner
+  const { ref } = useZxing({
+    constraints: cameraId
+      ? { video: { deviceId: { exact: cameraId } } }
+      : { video: true },
+    onDecodeResult(result) {
+      const scannedToken = result.getText();
+      console.log("QR Scanned:", scannedToken);
+      setResult(scannedToken);
+      sendToBackend(scannedToken);
+    },
+    onError(err) {
+      console.error("Scanner Error:", err);
+      if (availableCameras.length > 1) {
+        // Try the next camera if available
+        const nextIndex =
+          (availableCameras.findIndex((cam) => cam.deviceId === cameraId) + 1) %
+          availableCameras.length;
+        setCameraId(availableCameras[nextIndex].deviceId);
+      } else {
+        setError("Camera access failed. Check permissions or device.");
+      }
+    },
+  });
+
+  // Send scanned token to backend
+  const sendToBackend = async (token) => {
+    try {
+      const res = await fetch("http://localhost:3000/api/qr/scan", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ qr_token: token }),
+      });
+
+      const data = await res.json();
+      setServerResponse(data);
+    } catch (err) {
+      console.error("Backend Error:", err);
+      setServerResponse({
+        status: "error",
+        message: "Failed to connect to server",
+      });
+    }
+  };
+
+  return (
+    <div className="text-center p-10 bg-[#1E1E1E] rounded-lg border border-[#333] shadow-lg">
+      <h2 className="text-2xl font-bold text-white mb-6">
+        🔍 Scan QR Gym System
+      </h2>
+
+      {/* Debug info */}
+      <p className="text-xs text-gray-500 mb-2">
+        Available Cameras:{" "}
+        {availableCameras.length > 0
+          ? availableCameras.map((cam) => cam.label || "Unnamed").join(", ")
+          : "None detected"}
+      </p>
+
+      {/* Error display */}
+      {error && <p className="text-red-400 mb-4">{error}</p>}
+      {/* Video feed */}
+      <div className="flex justify-center">
+        <video
+          ref={ref}
+          style={{
+            width: "300px",
+            height: "200px",
+            borderRadius: "10px",
+            border: "2px solid #ff1f1f",
+          }}
+          autoPlay
+          muted
+          playsInline
+        />
+      </div>
+
+      {/* Scanned QR token */}
+      <h3 className="text-lg font-semibold text-gray-300 mt-4">
+        QR Token Terbaca:{" "}
+        <span className="text-[#ff1f1f]">{result || "Belum ada"}</span>
+      </h3>
+
+      {/* Server response */}
+      {serverResponse && (
+        <div
+          className={`mt-6 p-4 rounded-lg border ${
+            serverResponse.status === "success"
+              ? "bg-green-900/20 border-green-500 text-green-300"
+              : "bg-red-900/20 border-red-500 text-red-300"
+          }`}
+        >
+          <h3 className="font-bold">{serverResponse.message}</h3>
+          {serverResponse.user && (
+            <p className="mt-2">👤 Nama: {serverResponse.user.full_name}</p>
+          )}
+        </div>
+      )}
     </div>
   );
 };

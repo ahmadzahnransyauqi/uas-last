@@ -23,6 +23,7 @@ export default function Profile() {
     phone: "",
     goal: "",
     profile_photo: null,
+    qr_token: "", // add qr_token here
   };
 
   const [profile, setProfile] = useState(emptyProfile);
@@ -30,7 +31,7 @@ export default function Profile() {
   const [photoFile, setPhotoFile] = useState(null);
   const [photoPreview, setPhotoPreview] = useState(null);
 
-  // Fetch user profile
+  // Fetch user profile and QR token
   useEffect(() => {
     const fetchProfile = async () => {
       try {
@@ -49,19 +50,34 @@ export default function Profile() {
           phone: user.phone || "",
           goal: user.goal || "",
           profile_photo: user.profile_photo || null,
+          qr_token: "", // initialize empty
         };
 
         setProfile(sanitizedUser);
         setEditedProfile(sanitizedUser);
 
-        // FIX: URL for preview
         setPhotoPreview(
           sanitizedUser.profile_photo
             ? `http://localhost:3000${sanitizedUser.profile_photo}`
             : null
         );
+
+        // Fetch QR token from backend
+        if (sanitizedUser.id) {
+          const qrRes = await axios.post(
+            "http://localhost:3000/api/qr/generate",
+            { user_id: sanitizedUser.id }
+          );
+
+          if (qrRes.data?.data?.qr_token) {
+            setProfile((prev) => ({
+              ...prev,
+              qr_token: qrRes.data.data.qr_token,
+            }));
+          }
+        }
       } catch (err) {
-        console.error("Failed to load profile:", err);
+        console.error("Failed to load profile or QR token:", err);
       }
     };
 
@@ -82,7 +98,6 @@ export default function Profile() {
       const token = localStorage.getItem("token");
       const formData = new FormData();
 
-      // Ensure no null values are sent
       Object.keys(editedProfile).forEach((key) => {
         let value = editedProfile[key];
         if (value === null || value === undefined) value = "";
@@ -112,12 +127,12 @@ export default function Profile() {
         phone: updated.phone || "",
         goal: updated.goal || "",
         profile_photo: updated.profile_photo || null,
+        qr_token: profile.qr_token, // keep existing QR token
       };
 
       setProfile(sanitizedUpdated);
       setEditedProfile(sanitizedUpdated);
 
-      // FIX: URL for preview after saving
       setPhotoPreview(
         sanitizedUpdated.profile_photo
           ? `http://localhost:3000${sanitizedUpdated.profile_photo}`
@@ -133,14 +148,11 @@ export default function Profile() {
 
   const handleCancel = () => {
     setEditedProfile(profile);
-
-    // FIX: restore correct image URL
     setPhotoPreview(
       profile.profile_photo
         ? `http://localhost:3000${profile.profile_photo}`
         : null
     );
-
     setPhotoFile(null);
     setIsEditing(false);
   };
@@ -175,7 +187,6 @@ export default function Profile() {
           style={{ backgroundColor: "#252525" }}
         >
           <div className="relative w-32 h-32 mb-4">
-            {/* Profile Circle */}
             <div
               className="w-32 h-32 rounded-full overflow-hidden flex items-center justify-center"
               style={{ backgroundColor: "#1a1a1a" }}
@@ -191,7 +202,6 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Upload Button */}
             {isEditing && (
               <label
                 htmlFor="profilePhotoInput"
@@ -228,35 +238,58 @@ export default function Profile() {
             @{profile.username}
           </p>
 
+          {/* QR Code Button */}
           <button
             onClick={() => setShowQRCode(!showQRCode)}
             className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg hover:opacity-90"
             style={{ backgroundColor: "#ff1f1f", color: "#ffffff" }}
           >
             <QrCode size={18} />
-            {showQRCode ? "Hide QR Code" : "Generate QR Code"}
+            {showQRCode ? "Tutup QR Code" : "Tampilkan QR Member"}
           </button>
 
+          {/* QR Code Area */}
           {showQRCode && (
             <div
               className="mt-4 p-4 rounded-lg"
-              style={{ backgroundColor: "#ffffff" }}
+              style={{ backgroundColor: "#ffffff", maxWidth: "300px" }}
             >
               <QRCodeSVG
-                value={JSON.stringify({
-                  id: profile.id,
-                  full_name: profile.full_name,
-                  username: profile.username,
-                })}
-                size={180}
+                value={profile.qr_token || profile.id}
+                size={200}
                 level="H"
               />
               <p
                 className="text-center mt-2"
-                style={{ color: "#1a1a1a" }}
+                style={{
+                  color: "#1a1a1a",
+                  fontWeight: "bold",
+                  marginTop: "1rem",
+                  wordBreak: "break-all",
+                  fontSize: "0.9rem",
+                }}
               >
                 ID: {profile.id}
               </p>
+              <button
+                onClick={() => {
+                  navigator.clipboard.writeText(profile.qr_token || profile.id);
+                  alert("Token berhasil disalin!");
+                }}
+                style={{
+                  marginTop: "1rem",
+                  padding: "0.5rem 1rem",
+                  fontSize: "0.9rem",
+                  color: "#fff",
+                  backgroundColor: "#1a1a1a",
+                  borderRadius: "6px",
+                  border: "none",
+                  cursor: "pointer",
+                  width: "100%",
+                }}
+              >
+                Copy QR Token
+              </button>
             </div>
           )}
         </div>
@@ -271,8 +304,7 @@ export default function Profile() {
           </h3>
 
           <div className="space-y-4">
-            {[
-              { label: "Username", icon: User, key: "username" },
+            {[{ label: "Username", icon: User, key: "username" },
               { label: "Full Name", icon: User, key: "full_name" },
               { label: "Email", icon: Mail, key: "email" },
               { label: "Phone", icon: Phone, key: "phone" },
@@ -285,7 +317,6 @@ export default function Profile() {
                   <Icon size={18} />
                   {label}
                 </label>
-
                 {isEditing ? (
                   <input
                     type="text"
@@ -310,7 +341,6 @@ export default function Profile() {
               </div>
             ))}
 
-            {/* Goals */}
             <div>
               <label
                 className="flex items-center gap-2 mb-2"
@@ -324,10 +354,7 @@ export default function Profile() {
                   placeholder="Describe your fitness goals"
                   value={editedProfile.goal || ""}
                   onChange={(e) =>
-                    setEditedProfile({
-                      ...editedProfile,
-                      goal: e.target.value,
-                    })
+                    setEditedProfile({ ...editedProfile, goal: e.target.value })
                   }
                   className="w-full px-4 py-2 rounded-lg"
                   rows={3}
@@ -342,7 +369,6 @@ export default function Profile() {
               )}
             </div>
 
-            {/* Save / Cancel */}
             {isEditing && (
               <div className="flex gap-4 pt-4">
                 <button
