@@ -61,30 +61,26 @@ export default function Billing() {
     fetchMembershipPlans();
   }, []);
 
-  if (!token) return <p style={{ color: "#fff" }}>You are not logged in.</p>;
+  if (!token) return <p className="text-white">You are not logged in.</p>;
 
   return (
-    <div
-      style={{
-        padding: "20px",
-        minHeight: "100vh",
-        backgroundColor: "#121212",
-      }}
-    >
-      <h2 className="text-white font-bold text-3xl mb-6">Billing</h2>
+    <div className="min-h-screen bg-[#121212] p-4 md:p-6 lg:p-8">
+      <h2 className="text-white font-bold text-2xl md:text-3xl mb-4 md:mb-6">
+        Billing
+      </h2>
 
-      <p className="text-gray-400 mb-8">
+      <p className="text-gray-400 mb-6 md:mb-8 text-sm md:text-base">
         Choose from the available membership plans below.
       </p>
 
       {loading ? (
-        <p style={{ color: "#9CA3AF" }}>Loading membership plans...</p>
+        <p className="text-[#9CA3AF]">Loading membership plans...</p>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6">
           {plans.map((plan) => (
             <div
               key={plan.id}
-              className="p-6 rounded-lg cursor-pointer"
+              className="p-4 md:p-6 rounded-lg cursor-pointer transition-all duration-200 hover:scale-105"
               onClick={() => setSelectedPlan(plan)}
               style={{
                 backgroundColor:
@@ -93,28 +89,27 @@ export default function Billing() {
                   selectedPlan?.id === plan.id
                     ? "2px solid #ff1f1f"
                     : "2px solid transparent",
-                transition: "0.2s",
               }}
             >
-              <h3 style={{ color: "#fff", fontSize: "1.25rem" }}>
+              <h3 className="text-white text-lg md:text-xl font-semibold">
                 {plan.name}
               </h3>
 
-              <p style={{ color: "#ff1f1f", marginTop: 4, fontWeight: "bold" }}>
+              <p className="text-[#ff1f1f] mt-2 font-bold text-lg md:text-xl">
                 Rp {parseInt(plan.price).toLocaleString("id-ID")}
               </p>
 
-              <p style={{ color: "#9CA3AF", marginTop: 4 }}>
+              <p className="text-[#9CA3AF] mt-2 text-sm md:text-base">
                 Duration: {plan.duration_days} days
               </p>
 
-              <h4 className="mt-4 mb-2" style={{ color: "#fff" }}>
+              <h4 className="mt-4 mb-2 text-white text-base md:text-lg">
                 Benefits:
               </h4>
 
               <ul className="list-disc pl-5 space-y-1">
                 {plan.benefits.map((b, i) => (
-                  <li key={i} style={{ color: "#9CA3AF" }}>
+                  <li key={i} className="text-[#9CA3AF] text-sm md:text-base">
                     {b}
                   </li>
                 ))}
@@ -122,7 +117,7 @@ export default function Billing() {
 
               {selectedPlan?.id === plan.id && (
                 <div className="flex items-center gap-2 mt-3">
-                  <CheckCircle2 size={18} color="#10b981" />
+                  <CheckCircle2 size={18} className="text-green-400" />
                   <span className="text-green-400 text-sm">Selected</span>
                 </div>
               )}
@@ -132,11 +127,11 @@ export default function Billing() {
       )}
 
       {/* BUY BUTTON */}
-      <div className="mt-10">
+      <div className="mt-8 md:mt-10 flex justify-center">
         <button
           disabled={!selectedPlan || buying}
           onClick={handleBuy}
-          className={`px-6 py-3 rounded-lg font-bold text-white ${
+          className={`px-6 py-3 rounded-lg font-bold text-white text-sm md:text-base transition-colors ${
             !selectedPlan || buying
               ? "bg-gray-700 cursor-not-allowed"
               : "bg-[#ff1f1f] hover:bg-red-600"

@@ -18,7 +18,9 @@ import {
   FaChalkboardTeacher,
   FaMoneyBillWave,
   FaListAlt,
-  FaQrcode, // Added for Scan QR tab
+  FaQrcode,
+  FaBars, // Added for hamburger menu
+  FaTimes as FaClose, // Added for close icon
 } from "react-icons/fa";
 import { useZxing } from "react-zxing"; // Added for QR scanning
 import logoImg from "../../assets/logotext.png";
@@ -39,7 +41,22 @@ const AdminDashboard = () => {
   const [activeTab, setActiveTab] = useState("dashboard");
   const navigate = useNavigate();
   const [logoutModal, setLogoutModal] = useState(false);
+  const [sidebarOpen, setSidebarOpen] = useState(false); // Default closed on small screens
   const { logout } = useAuth(); // make sure you have access to the hook
+
+  // Handle window resize to auto-open sidebar on larger screens
+  useEffect(() => {
+    const handleResize = () => {
+      if (window.innerWidth >= 768) {
+        setSidebarOpen(true); // Open on md+ screens
+      } else {
+        setSidebarOpen(false); // Close on small screens
+      }
+    };
+    handleResize(); // Initial check
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   return (
     <div
@@ -48,10 +65,12 @@ const AdminDashboard = () => {
     >
       {/* SIDEBAR */}
       <aside
-        className="w-64 fixed h-full z-20 flex flex-col shadow-2xl border-r border-[#333]"
+        className={`fixed h-full w-64 z-20 flex flex-col shadow-2xl border-r border-[#333] transition-transform duration-300 ${
+          sidebarOpen ? "translate-x-0" : "-translate-x-full"
+        } md:translate-x-0`} // Always visible on md+, slide on small
         style={{ backgroundColor: C.sidebar }}
       >
-        {/* REVISI LOGO*/}
+        {/* LOGO */}
         <div className="h-28 flex items-center justify-center border-b border-[#333]">
           <img
             src={logoImg}
@@ -110,17 +129,34 @@ const AdminDashboard = () => {
         </div>
       </aside>
 
+      {/* BACKDROP for small screens when sidebar is open */}
+      {sidebarOpen && (
+        <div
+          className="fixed inset-0 bg-black/50 z-10 md:hidden"
+          onClick={() => setSidebarOpen(false)}
+        ></div>
+      )}
+
       {/* MAIN CONTENT */}
-      <main className="flex-1 ml-64 p-10">
-        <header className="mb-10 flex items-center justify-between border-b border-[#333] pb-6">
-          <h1 className="text-3xl font-extrabold uppercase tracking-widest flex items-center gap-4">
-            <div
-              className="w-1.5 h-8 rounded-full shadow-[0_0_10px_#ff1f1f]"
-              style={{ backgroundColor: C.accent }}
-            ></div>
-            {activeTab.replace("-", " ")}
-          </h1>
-          <div className="text-xs text-gray-500 font-mono tracking-widest bg-[#252525] px-3 py-1 rounded border border-[#333]">
+      <main className="flex-1 ml-0 md:ml-64 p-4 md:p-10"> {/* No margin on small, margin on md+ */}
+        <header className="mb-6 md:mb-10 flex items-center justify-between border-b border-[#333] pb-4 md:pb-6">
+          <div className="flex items-center gap-4">
+            {/* Hamburger button for small screens */}
+            <button
+              onClick={() => setSidebarOpen(!sidebarOpen)}
+              className="md:hidden text-white p-2 rounded hover:bg-[#333] transition"
+            >
+              {sidebarOpen ? <FaClose size={20} /> : <FaBars size={20} />}
+            </button>
+            <h1 className="text-2xl md:text-3xl font-extrabold uppercase tracking-widest flex items-center gap-4">
+              <div
+                className="w-1.5 h-6 md:h-8 rounded-full shadow-[0_0_10px_#ff1f1f]"
+                style={{ backgroundColor: C.accent }}
+              ></div>
+              {activeTab.replace("-", " ")}
+            </h1>
+          </div>
+          <div className="text-xs text-gray-500 font-mono tracking-widest bg-[#252525] px-2 md:px-3 py-1 rounded border border-[#333]">
             ADMIN DASHBOARD - ROGER SUMATERA
           </div>
         </header>
@@ -203,8 +239,8 @@ const Modal = ({ isOpen, onClose, title, children }) => {
 };
 
 const Table = ({ headers, children }) => (
-  <div className="rounded-lg overflow-hidden border border-[#333] shadow-xl bg-[#1E1E1E]">
-    <table className="w-full text-left">
+  <div className="rounded-lg overflow-hidden border border-[#333] shadow-xl bg-[#1E1E1E] overflow-x-auto">
+    <table className="w-full text-left min-w-full">
       <thead className="bg-[#252525] text-gray-400 text-xs uppercase font-bold tracking-wider">
         <tr>
           {headers.map((h, i) => (
@@ -213,8 +249,7 @@ const Table = ({ headers, children }) => (
             </th>
           ))}
         </tr>
-      </thead>
-      <tbody className="divide-y divide-[#333] text-sm text-gray-200">
+      </thead><tbody className="divide-y divide-[#333] text-sm text-gray-200">
         {children}
       </tbody>
     </table>
@@ -236,9 +271,9 @@ const DashboardView = () => {
     );
 
   return (
-    <div className="space-y-10">
+    <div className="space-y-6 md:space-y-10">
       {/* 8 GRID STATS */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6"> {/* Adjusted for better small screen grid */}
         <StatBox
           title="Total Members"
           val={data.totalMembers}
@@ -285,7 +320,7 @@ const DashboardView = () => {
       </div>
 
       {/* ACTIVITY LOGS */}
-      <div className="bg-[#1E1E1E] p-8 rounded-lg border border-[#333] shadow-lg">
+      <div className="bg-[#1E1E1E] p-6 md:p-8 rounded-lg border border-[#333] shadow-lg">
         <h3 className="text-lg font-bold mb-6 flex items-center gap-2 text-white border-b border-[#333] pb-4">
           <FaHistory className="text-[#ff1f1f]" /> Recent System Activities
         </h3>
@@ -293,9 +328,9 @@ const DashboardView = () => {
           {data.recentLogs?.map((log, i) => (
             <li
               key={i}
-              className="flex justify-between items-center bg-[#252525] p-4 rounded border border-[#333] hover:border-[#ff1f1f] transition"
+              className="flex flex-col md:flex-row justify-between items-start md:items-center bg-[#252525] p-4 rounded border border-[#333] hover:border-[#ff1f1f] transition"
             >
-              <span className="text-gray-300 font-medium text-sm">
+              <span className="text-gray-300 font-medium text-sm mb-2 md:mb-0">
                 {log.activity}
               </span>
               <span className="text-xs text-gray-500 font-mono">
@@ -311,7 +346,7 @@ const DashboardView = () => {
 
 const StatBox = ({ title, val, icon, highlight, color }) => (
   <div
-    className={`bg-[#202020] p-6 rounded-lg border border-[#333] hover:border-[#ff1f1f] transition-all duration-300 shadow-lg group relative overflow-hidden`}
+    className={`bg-[#202020] p-4 md:p-6 rounded-lg border border-[#333] hover:border-[#ff1f1f] transition-all duration-300 shadow-lg group relative overflow-hidden`}
   >
     {highlight && (
       <div className="absolute top-0 right-0 w-2 h-2 bg-[#ff1f1f] rounded-bl-lg animate-pulse"></div>
@@ -321,12 +356,12 @@ const StatBox = ({ title, val, icon, highlight, color }) => (
         <p className="text-[10px] font-bold text-gray-500 uppercase tracking-widest mb-2">
           {title}
         </p>
-        <h2 className={`text-2xl font-extrabold ${color || "text-white"}`}>
+        <h2 className={`text-xl md:text-2xl font-extrabold ${color || "text-white"}`}>
           {val}
         </h2>
       </div>
       <div
-        className={`text-3xl ${
+        className={`text-2xl md:text-3xl ${
           highlight ? "text-[#ff1f1f]" : "text-[#333] group-hover:text-white"
         } transition-colors`}
       >
@@ -432,7 +467,7 @@ const ManageUsers = () => {
               <label className="text-xs text-gray-500 uppercase font-bold">
                 Membership Status
               </label>
-              <select
+                           <select
                 className="bg-[#2A2A2A] text-white p-3 rounded border border-[#444] focus:border-[#ff1f1f] outline-none"
                 value={form.status}
                 onChange={(e) => setForm({ ...form, status: e.target.value })}
@@ -964,7 +999,7 @@ const ManageClasses = () => {
               {c.start_time?.slice(0, 5)} - {c.end_time?.slice(0, 5)}
             </td>
             <td className="p-4 text-white">{c.difficulty || "-"}</td>
-            <td className="p-4 text-gray-300">{c.categories || "-"}</td>
+                       <td className="p-4 text-gray-300">{c.categories || "-"}</td>
             <td className="p-4 text-gray-300">
               {c.spots}/{c.total_spots}
             </td>
@@ -1187,7 +1222,7 @@ const ScanQR = () => {
   };
 
   return (
-    <div className="text-center p-10 bg-[#1E1E1E] rounded-lg border border-[#333] shadow-lg">
+    <div className="text-center p-4 md:p-10 bg-[#1E1E1E] rounded-lg border border-[#333] shadow-lg">
       <h2 className="text-2xl font-bold text-white mb-6">
         🔍 Scan QR Gym System
       </h2>
@@ -1247,7 +1282,7 @@ const ScanQR = () => {
 const AddBtn = ({ onClick, label }) => (
   <button
     onClick={onClick}
-    className="bg-[#ff1f1f] hover:bg-[#ff6161] text-white px-6 py-3 rounded-lg font-bold shadow-lg shadow-red-900/20 flex items-center gap-2 transition-transform hover:-translate-y-0.5"
+    className="bg-[#ff1f1f] hover:bg-[#ff6161] text-white px-4 md:px-6 py-3 rounded-lg font-bold shadow-lg shadow-red-900/20 flex items-center gap-2 transition-transform hover:-translate-y-0.5"
   >
     <FaPlus /> {label}
   </button>
